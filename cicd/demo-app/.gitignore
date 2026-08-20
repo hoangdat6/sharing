@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.env
+.env.local
+*.log
+playwright-report/
+test-results/
+.demo4-state.json
+src/services/local-session.ts

@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>HTML slide deck</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+      :root { --paper:#F3F6F9; --ink:#0B1B2B; --accent:#3C9CD7; --line:#C9D5DC; --muted:#52636F; --radius:10px; --font-sans:"Be Vietnam Pro",sans-serif; --font-mono:"IBM Plex Mono",monospace; }
+      * { box-sizing:border-box; } body { margin:0; overflow:hidden; background:#0B1B2B; color:var(--ink); font-family:var(--font-sans); }
+      #viewport { width:100vw; height:100vh; display:grid; place-items:center; overflow:hidden; }
+      #stage { width:1920px; height:1080px; position:relative; flex:none; transform-origin:center center; background:var(--paper); overflow:hidden; }
+      .slide { position:absolute; inset:0; display:none; padding:64px 88px; grid-template-rows:auto 1fr auto; gap:24px; }
+      .slide.is-active { display:grid; } .slide--title { background:var(--paper); grid-template-columns:1.1fr .9fr; align-items:center; }
+      .slide__header { grid-column:1 / -1; display:flex; align-items:flex-start; justify-content:space-between; gap:32px; } .brand-lockup { display:flex; justify-content:flex-end; align-items:center; min-width:160px; height:48px; } .brand-lockup img { display:block; max-width:160px; max-height:48px; width:auto; height:auto; object-fit:contain; }
+      .eyebrow,.step { margin:0; color:var(--accent); font:500 19px/1.25 var(--font-mono); letter-spacing:.04em; text-transform:uppercase; }
+      h1,h2,h3,p { margin:0; } h1 { max-width:1120px; font-size:66px; line-height:1.08; letter-spacing:-.05em; } h2 { max-width:1260px; font-size:46px; line-height:1.12; letter-spacing:-.04em; } h3 { font-size:28px; line-height:1.2; letter-spacing:-.025em; }
+      .deck { max-width:790px; color:#405261; font-size:27px; line-height:1.5; } .cover-meta { display:flex; flex-wrap:wrap; gap:14px 30px; margin-top:32px; color:#52636f; font-size:18px; line-height:1.4; } .cover-meta span { display:flex; align-items:baseline; gap:9px; } .cover-meta b { color:var(--accent); font:500 15px/1 var(--font-mono); letter-spacing:.03em; text-transform:uppercase; } .slide-footer { align-self:end; display:flex; justify-content:space-between; color:#71808b; font:17px/1 var(--font-mono); }
+      .two-col { display:grid; align-items:center; gap:54px; } .two-col--40-60 { grid-template-columns:2fr 3fr; } .two-col--60-40 { grid-template-columns:3fr 2fr; }
+      .three-col { display:grid; grid-template-columns:repeat(3,1fr); gap:28px; align-items:stretch; } .three-col article { border-top:3px solid var(--ink); padding:22px 0; } .three-col p,.pipeline__step p { margin-top:14px; color:#52636f; font-size:22px; line-height:1.45; }
+      .agenda { display:grid; grid-template-columns:repeat(3,1fr); gap:28px; padding:0; list-style:none; } .agenda li { border-top:3px solid var(--ink); padding:22px 0; } .agenda span { display:block; margin-bottom:36px; color:var(--accent); font:500 17px var(--font-mono); } .agenda strong { display:block; font-size:29px; } .agenda p { margin-top:12px; color:#52636f; font-size:21px; line-height:1.45; }
+      .panel { padding:34px; border:1px solid #C9D5DC; border-radius:var(--radius); background:#fff; } .panel p { font-size:26px; line-height:1.5; }
+      .pipeline { display:flex; align-items:center; gap:18px; } .pipeline__step { flex:1; min-height:226px; padding:28px; border-radius:var(--radius); background:#fff; border:1px solid #C9D5DC; } .pipeline__step span { color:var(--accent); font:500 17px var(--font-mono); } .pipeline__step h3 { margin-top:35px; } .pipeline__arrow { width:42px; height:2px; background:var(--accent); position:relative; } .pipeline__arrow::after { content:""; position:absolute; right:0; top:-5px; width:11px; height:11px; border-top:2px solid var(--accent); border-right:2px solid var(--accent); transform:rotate(45deg); }
+      .topic-icon { width:30px; height:30px; color:var(--accent); stroke-width:1.8; vertical-align:middle; } .pipeline__step .topic-icon { display:block; margin:22px 0 -21px; }
+      .data-table { width:100%; border-collapse:collapse; background:#fff; border-radius:var(--radius); overflow:hidden; font-size:21px; } .data-table th,.data-table td { padding:19px 23px; text-align:left; border-bottom:1px solid #D4DEE3; } .data-table thead { background:var(--ink); color:#fff; } .data-table tbody th { font-weight:600; } .data-table .is-highlighted { background:#DDEEF8; } .comparison { display:grid; grid-template-columns:1fr 1fr; gap:28px; } .comparison > article { padding:32px; border-radius:var(--radius); background:#fff; border:1px solid #C9D5DC; } .comparison > article.is-recommended { border:3px solid var(--accent); } .quote { max-width:1250px; padding-left:34px; border-left:5px solid var(--accent); font-size:39px; line-height:1.3; letter-spacing:-.03em; } .quote cite { display:block; margin-top:24px; color:#52636f; font:18px/1.4 var(--font-mono); font-style:normal; letter-spacing:0; }
+      .media-frame { margin:0; overflow:hidden; border-radius:var(--radius); background:#D9E4E9; } .media-frame img { width:100%; height:100%; display:block; object-fit:cover; } .media-frame figcaption { padding:17px 20px; background:#fff; color:#52636f; font-size:18px; } .media-frame figcaption span { margin-right:12px; color:var(--ink); font-family:var(--font-mono); }
+      .controls { position:fixed; right:20px; bottom:18px; display:flex; gap:8px; z-index:2; } button { width:38px; height:34px; border:1px solid #789; border-radius:7px; background:#fff; color:var(--ink); cursor:pointer; }
+      @media print { body,#viewport { background:#fff; overflow:visible; } #stage { transform:none !important; } .controls { display:none; } }
+    </style>
+    <!-- PIPELINE + CODE: copy this block into decks not based on this starter -->
+    <style>
+      .pipeline-anatomy { position:relative; display:flex; align-items:flex-start; align-self:center; width:100%; min-height:420px; padding:8px 4px 0; }
+      .pipeline-anatomy__spine { position:absolute; left:80px; right:36px; top:104px; height:2px; background:var(--ink); z-index:0; }
+      .pipeline-anatomy__col { position:relative; z-index:1; display:grid; grid-template-rows:56px 80px auto auto; justify-items:center; min-width:0; }
+      .pipeline-anatomy > .pipeline-anatomy__col { flex:0 0 148px; }
+      .pipeline-anatomy > .pipeline-anatomy__col--start { flex:0 0 160px; }
+      .pipeline-anatomy > .pipeline-anatomy__col--branch { flex:0 0 128px; }
+      .pipeline-anatomy__icon { width:32px; height:32px; align-self:center; color:var(--ink); }
+      .pipeline-anatomy .topic-icon { width:32px; height:32px; color:var(--ink); }
+      .pipeline-anatomy__box { display:grid; place-items:center; width:72px; height:72px; margin-top:4px; border-radius:14px; background:#fff; border:2px solid var(--ink); }
+      .pipeline-anatomy__box--ink { background:var(--ink); border-color:var(--ink); }
+      .pipeline-anatomy__box--ink .topic-icon { color:var(--paper); }
+      .pipeline-anatomy__dot { width:16px; height:16px; margin-top:32px; border-radius:50%; background:var(--paper); border:3px solid var(--ink); box-sizing:border-box; }
+      .pipeline-anatomy__label { margin-top:14px; text-align:center; font:500 14px/1.3 var(--font-mono); letter-spacing:.04em; text-transform:uppercase; }
+      .pipeline-anatomy__related { position:relative; grid-row:4; display:grid; justify-items:center; gap:10px; margin-top:12px; }
+      .pipeline-anatomy__related::before { content:""; position:absolute; top:-92px; left:50%; width:2px; height:92px; background:var(--ink); }
+      .pipeline-anatomy__zone { position:relative; z-index:1; flex:1 1 0; display:flex; margin:0 10px; margin-top:-12px; padding:12px 8px 36px; border:1.5px dashed var(--accent); border-radius:var(--radius); }
+      .pipeline-anatomy__zone::after { content:attr(data-zone); position:absolute; left:50%; bottom:-11px; transform:translateX(-50%); padding:0 8px; background:var(--paper); color:var(--accent); font:500 13px/1 var(--font-mono); letter-spacing:.08em; white-space:nowrap; }
+      .pipeline-anatomy__zone .pipeline-anatomy__col { flex:1; }
+      .pipeline-stack { list-style:none; margin:0; padding:0; max-width:520px; }
+      .pipeline-stack li { display:grid; grid-template-columns:52px 1fr; gap:16px; align-items:center; padding:13px 18px; background:#fff; border:1px solid var(--line); border-bottom:0; }
+      .pipeline-stack li:first-child { border-radius:var(--radius) var(--radius) 0 0; }
+      .pipeline-stack li:last-child { border-bottom:1px solid var(--line); border-radius:0 0 var(--radius) var(--radius); }
+      .pipeline-stack span { color:var(--accent); font:500 16px var(--font-mono); }
+      .pipeline-stack code { font:500 22px/1.3 var(--font-mono); }
+      .pipeline-stack p { color:#52636f; font-size:18px; }
+      .pipeline-stack li.pipeline-stack__gate { background:var(--ink); color:#fff; border-color:var(--ink); }
+      .pipeline-stack li.pipeline-stack__gate span { color:var(--accent); }
+      .pipeline-stack li.pipeline-stack__gate p { color:#d5e3ec; }
+      .pipeline-stack--cut { display:flex; flex-direction:column; gap:0; max-width:560px; }
+      .pipeline-stack__region[data-region]::before { content:attr(data-region); display:block; margin:0 0 8px; color:var(--accent); font:500 14px/1 var(--font-mono); letter-spacing:.08em; }
+      .pipeline-stack__cut { display:flex; align-items:center; gap:14px; margin:10px 0; color:var(--accent); font:500 15px/1 var(--font-mono); letter-spacing:.06em; }
+      .pipeline-stack__cut::before,.pipeline-stack__cut::after { content:""; flex:1; height:2px; background:var(--accent); }
+      .pipeline-converge { display:grid; grid-template-rows:auto auto auto; justify-items:center; align-content:center; align-self:center; gap:8px; width:100%; min-height:0; }
+      .pipeline-converge__actors { display:grid; grid-template-columns:1fr 1fr; gap:48px; align-items:start; width:min(920px,100%); }
+      .pipeline-converge__actors article { padding:28px; background:#fff; border:1px solid var(--line); border-radius:var(--radius); text-align:center; }
+      .pipeline-converge__actors .topic-icon { display:block; margin:0 auto 14px; width:36px; height:36px; }
+      .pipeline-converge__actors p { margin-top:10px; color:#52636f; font-size:20px; }
+      .pipeline-converge__bypass { margin:6px 0 0; color:var(--accent); font:500 14px/1 var(--font-mono); letter-spacing:.08em; text-transform:uppercase; }
+      .pipeline-converge__gate { min-width:280px; padding:26px 32px; text-align:center; background:#fff; border:3px solid var(--ink); border-radius:var(--radius); }
+      .pipeline-converge__gate span { display:block; color:var(--accent); font:500 14px/1 var(--font-mono); letter-spacing:.08em; }
+      .pipeline-converge__gate code { display:block; margin-top:10px; font:600 26px/1.2 var(--font-mono); }
+      .pipeline-converge__out { margin-top:4px; color:#52636f; font:500 18px var(--font-mono); }
+      .pipeline-converge__gate,.pipeline-converge__out { position:relative; }
+      .pipeline-converge__gate::before,.pipeline-converge__out::before { content:""; position:absolute; left:50%; width:2px; height:18px; background:var(--ink); }
+      .pipeline-converge__gate::before { top:-18px; } .pipeline-converge__out::before { top:-18px; }
+      .pipeline-parallel { display:flex; align-items:stretch; align-self:center; gap:22px; }
+      .pipeline-parallel__step { flex:0 0 240px; padding:28px; background:#fff; border:1px solid var(--line); border-radius:var(--radius); }
+      .pipeline-parallel__step span { color:var(--accent); font:500 16px var(--font-mono); }
+      .pipeline-parallel__step h3 { margin-top:18px; }
+      .pipeline-parallel__fan { position:relative; flex:1; display:grid; gap:12px; padding:28px 22px 18px; border:1.5px dashed var(--accent); border-radius:var(--radius); }
+      .pipeline-parallel__fan::before { content:attr(data-label); position:absolute; top:-10px; left:18px; padding:0 8px; background:var(--paper); color:var(--accent); font:500 13px/1 var(--font-mono); letter-spacing:.08em; text-transform:uppercase; }
+      .pipeline-parallel__fan article { padding:16px 18px; background:#fff; border:1px solid var(--line); border-radius:var(--radius); }
+      .code-block { margin:0; overflow:hidden; border-radius:var(--radius); background:var(--ink); color:#E8EEF4; }
+      .code-block__chrome { display:flex; align-items:center; justify-content:space-between; padding:14px 22px; background:#07131D; color:#9BB0BE; font:500 16px/1 var(--font-mono); }
+      .code-block__lang { color:var(--accent); letter-spacing:.06em; text-transform:uppercase; }
+      .code-block__body { margin:0; padding:20px 0 24px; overflow:auto; font:500 22px/1.55 var(--font-mono); }
+      .code-block__line { display:block; padding:0 28px; white-space:pre; }
+      .code-block__line.is-highlight { background:rgba(60,156,215,.2); box-shadow:inset 4px 0 0 var(--accent); }
+      .code-block--diff .is-del { background:rgba(180,60,60,.22); color:#F5C4C4; }
+      .code-block--diff .is-add { background:rgba(46,140,90,.22); color:#C4F0D4; }
+      .code-block--term .is-ok { color:#8EE0B0; } .code-block--term .is-fail { color:#F5A3A3; }
+      .code-block__prompt { color:var(--accent); margin-right:10px; }
+      .two-col:has(.code-block) { align-items:start; }
+    </style>
+  </head>
+  <body>
+    <main id="viewport" aria-live="polite">
+      <div id="stage">
+        <section class="slide slide--title is-active" data-slide>
+          <header class="slide__header"><p class="eyebrow">Sharing / 2026</p><div class="brand-lockup"><img src="kaopiz-logo.svg" alt="Kaopiz"></div></header>
+          <div class="title-copy"><h1>Một thông điệp rõ ràng cho bài trình bày</h1><p class="deck">Thay nội dung mẫu bằng câu chuyện, bằng chứng, và hình minh họa của bạn.</p><div class="cover-meta" aria-label="Thông tin trình bày"><span><b>Tác giả</b> Tên tác giả</span><span><b>Trình bày</b> Ngày trình bày</span></div></div>
+          <figure class="media-frame"><img src="https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=1200&q=80" alt="Ánh sáng và bóng tạo thành hình khối trừu tượng"><figcaption><span>Visual</span> Dùng ảnh có chủ đích, không chỉ để lấp khoảng trống.</figcaption></figure>
+          <footer class="slide-footer"><span>HTML SLIDES</span><span>01 / 05</span></footer>
+        </section>
+        <section class="slide" data-slide>
+          <header class="slide__header"><div><p class="eyebrow">02 / Process</p><h2>Chọn bố cục giúp người xem hiểu luồng công việc</h2></div><div class="brand-lockup"><img src="kaopiz-logo.svg" alt="Kaopiz"></div></header>
+          <div class="pipeline"><article class="pipeline__step"><span>01</span><i class="topic-icon" data-lucide="package" aria-hidden="true"></i><h3>Input</h3><p>Thông tin đầu vào rõ ràng.</p></article><i class="pipeline__arrow" aria-hidden="true"></i><article class="pipeline__step"><span>02</span><i class="topic-icon" data-lucide="shield-check" aria-hidden="true"></i><h3>Process</h3><p>Biến đổi hoặc quyết định chính.</p></article><i class="pipeline__arrow" aria-hidden="true"></i><article class="pipeline__step"><span>03</span><i class="topic-icon" data-lucide="rocket" aria-hidden="true"></i><h3>Outcome</h3><p>Kết quả có thể kiểm chứng.</p></article></div>
+          <footer class="slide-footer"><span>HTML SLIDES</span><span>02 / 05</span></footer>
+        </section>
+        <section class="slide" data-slide>
+          <header class="slide__header"><div><p class="eyebrow">03 / Anatomy</p><h2>Anatomy of a CI/CD pipeline</h2></div><div class="brand-lockup"><img src="kaopiz-logo.svg" alt="Kaopiz"></div></header>
+          <div class="pipeline-anatomy" aria-label="Anatomy of a CI/CD pipeline">
+            <i class="pipeline-anatomy__spine" aria-hidden="true"></i>
+            <div class="pipeline-anatomy__col pipeline-anatomy__col--start">
+              <span class="pipeline-anatomy__icon"></span>
+              <span class="pipeline-anatomy__box pipeline-anatomy__box--ink"><i class="topic-icon" data-lucide="terminal" aria-hidden="true"></i></span>
+              <p class="pipeline-anatomy__label">CODE</p>
+            </div>
+            <div class="pipeline-anatomy__col pipeline-anatomy__col--branch">
+              <span class="pipeline-anatomy__icon"></span>
+              <span class="pipeline-anatomy__dot"></span>
+              <p class="pipeline-anatomy__label"></p>
+              <div class="pipeline-anatomy__related">
+                <span class="pipeline-anatomy__box"><i class="topic-icon" data-lucide="terminal" aria-hidden="true"></i></span>
+                <p class="pipeline-anatomy__label">RELATED CODE</p>
+              </div>
+            </div>
+            <div class="pipeline-anatomy__col">
+              <i class="topic-icon pipeline-anatomy__icon" data-lucide="git-commit-horizontal" aria-hidden="true"></i>
+              <span class="pipeline-anatomy__dot"></span>
+              <p class="pipeline-anatomy__label">COMMIT</p>
+            </div>
+            <div class="pipeline-anatomy__zone" data-zone="CI PIPELINE">
+              <div class="pipeline-anatomy__col">
+                <span class="pipeline-anatomy__icon"></span>
+                <span class="pipeline-anatomy__dot"></span>
+                <p class="pipeline-anatomy__label">BUILD</p>
+              </div>
+              <div class="pipeline-anatomy__col">
+                <i class="topic-icon pipeline-anatomy__icon" data-lucide="flask-conical" aria-hidden="true"></i>
+                <span class="pipeline-anatomy__dot"></span>
+                <p class="pipeline-anatomy__label">UNIT TEST</p>
+              </div>
+              <div class="pipeline-anatomy__col">
+                <span class="pipeline-anatomy__icon"></span>
+                <span class="pipeline-anatomy__dot"></span>
+                <p class="pipeline-anatomy__label">INTEGRATION TESTS</p>
+              </div>
+            </div>
+            <div class="pipeline-anatomy__zone" data-zone="CD PIPELINE">
+              <div class="pipeline-anatomy__col">
+                <i class="topic-icon pipeline-anatomy__icon" data-lucide="scan-search" aria-hidden="true"></i>
+                <span class="pipeline-anatomy__dot"></span>
+                <p class="pipeline-anatomy__label">REVIEW</p>
+              </div>
+              <div class="pipeline-anatomy__col">
+                <i class="topic-icon pipeline-anatomy__icon" data-lucide="clipboard-check" aria-hidden="true"></i>
+                <span class="pipeline-anatomy__dot"></span>
+                <p class="pipeline-anatomy__label">STAGING</p>
+              </div>
+              <div class="pipeline-anatomy__col">
+                <i class="topic-icon pipeline-anatomy__icon" data-lucide="rocket" aria-hidden="true"></i>
+                <span class="pipeline-anatomy__dot"></span>
+                <p class="pipeline-anatomy__label">PRODUCTION</p>
+              </div>
+            </div>
+          </div>
+          <footer class="slide-footer"><span>HTML SLIDES</span><span>03 / 05</span></footer>
+        </section>
+        <section class="slide" data-slide>
+          <header class="slide__header"><div><p class="eyebrow">04 / Evidence</p><h2>Show the YAML, not a screenshot</h2></div><div class="brand-lockup"><img src="kaopiz-logo.svg" alt="Kaopiz"></div></header>
+          <div class="two-col two-col--60-40">
+            <figure class="code-block" aria-label="ci.yml">
+              <figcaption class="code-block__chrome"><span class="code-block__file">ci.yml</span><span class="code-block__lang">YAML</span></figcaption>
+              <pre class="code-block__body"><code><span class="code-block__line">name: ci</span>
+<span class="code-block__line">on: [push, pull_request]</span>
+<span class="code-block__line">jobs:</span>
+<span class="code-block__line is-highlight">  test:</span>
+<span class="code-block__line">    runs-on: ubuntu-latest</span>
+<span class="code-block__line">    steps:</span>
+<span class="code-block__line">      - uses: actions/checkout@v4</span>
+<span class="code-block__line">      - run: npm ci</span>
+<span class="code-block__line">      - run: npm test</span></code></pre>
+            </figure>
+            <figure class="code-block code-block--term">
+              <figcaption class="code-block__chrome"><span class="code-block__file">terminal</span><span class="code-block__lang">sh</span></figcaption>
+              <pre class="code-block__body"><code><span class="code-block__line"><span class="code-block__prompt">$</span> npm test</span>
+<span class="code-block__line is-ok">PASS  src/app.test.ts</span></code></pre>
+            </figure>
+          </div>
+          <footer class="slide-footer"><span>HTML SLIDES</span><span>04 / 05</span></footer>
+        </section>
+        <section class="slide" data-slide>
+          <header class="slide__header"><div><p class="eyebrow">05 / Close</p><h2>Kết thúc bằng điều người xem cần làm tiếp theo</h2></div><div class="brand-lockup"><img src="kaopiz-logo.svg" alt="Kaopiz"></div></header>
+          <div class="two-col two-col--40-60"><div><h3>Đừng nhồi thêm thông tin.</h3><p class="deck">Chốt lại bằng một quyết định, một yêu cầu, hoặc một hành động cụ thể.</p></div><div class="panel"><p>Next step: thay bằng hành động phù hợp với bài chia sẻ này.</p></div></div>
+          <footer class="slide-footer"><span>HTML SLIDES</span><span>05 / 05</span></footer>
+        </section>
+      </div>
+    </main>
+    <nav class="controls" aria-label="Điều khiển slide"><button type="button" data-prev aria-label="Slide trước">←</button><button type="button" data-next aria-label="Slide sau">→</button></nav>
+    <script src="https://unpkg.com/lucide@1.31.0"></script>
+    <script>
+      lucide.createIcons();
+      const stage = document.querySelector('#stage');
+      const slides = [...document.querySelectorAll('[data-slide]')];
+      let index = 0;
+      function scaleStage() { stage.style.transform = `scale(${Math.min(innerWidth / 1920, innerHeight / 1080)})`; }
+      function show(next) { index = (next + slides.length) % slides.length; slides.forEach((slide, i) => slide.classList.toggle('is-active', i === index)); }
+      addEventListener('resize', scaleStage); addEventListener('keydown', event => { if (['ArrowRight', ' ', 'PageDown'].includes(event.key)) show(index + 1); if (['ArrowLeft', 'PageUp'].includes(event.key)) show(index - 1); });
+      document.querySelector('[data-next]').onclick = () => show(index + 1); document.querySelector('[data-prev]').onclick = () => show(index - 1); scaleStage();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,4 @@
+interface:
+  display_name: "HTML Slides"
+  short_description: "Create clear reusable HTML presentations"
+  default_prompt: "Use $html-slides to turn this outline into a polished HTML slide deck."
