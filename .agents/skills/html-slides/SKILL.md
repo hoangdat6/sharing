@@ -40,6 +40,7 @@ Use these defaults unless the requester supplies a brand system:
 - Use concise outline icons only when they identify a real topic, state, or action (for example: `shield-check` for verification, `package` for an artifact, `rocket` for release). Lucide is the default library for standalone HTML: pin the CDN version, call `lucide.createIcons()`, and use icons as visual labels rather than decoration. Do not use an icon merely to make a card look complete.
 - Use the bundled Kaopiz logo at `assets/kaopiz-logo.svg` in the `brand-lockup` header of every slide, including title and closing slides. Keep it small and unobtrusive; preserve its aspect ratio and do not redraw it. Replace it only when the requester supplies another approved company identity and its logo asset.
 - Avoid purple/indigo gradients, glassmorphism, and generic collections of three equal icon-cards. A three-column layout is fine when it represents a real sequence, comparison, or categorization with meaningful content.
+- Cards, panels, callouts, and column items have no one-sided accent bar: no `border-left`, `border-top`, `border-right`, or `border-bottom` stripe, and no `::before` / inset `box-shadow` / gradient stand-in. Separate them with gap, radius, fill, shadow, or an even `border: 1px solid var(--line)`. Status and emphasis go in type, labels, or fill — not an edge stripe. Not cards: the `quote` left rule, table row rules, and diagram connectors (arrows, spines).
 - Give the deck rhythm: vary title, visual, process, comparison, and summary layouts rather than repeating the same card grid.
 
 ## Workflow
@@ -48,7 +49,7 @@ Use these defaults unless the requester supplies a brand system:
 2. Choose a component for each slide. Read [the component catalog](references/components.md) before implementing the layouts, including `brand-lockup`, `code-block`, and the pipeline variants (`pipeline`, `pipeline-anatomy`, `pipeline-stack`, `pipeline-converge`, `pipeline-parallel`). Preview layouts in [the component demo deck](assets/component-demo.html). Copy CSS from the starter when the deck is not based on it.
 3. Start from [the HTML starter](assets/slide-starter.html) when it fits, or preserve its stage/scaling and token conventions in an existing deck.
 4. Use real visuals and verify every image has an intentional crop, descriptive `alt` text, and sufficient contrast with adjacent type.
-5. Preview at both full-slide and reduced viewport sizes. Check for overflow, clipped text, tiny type, broken image URLs, invalid claims, and titles that wrap unnecessarily. Keep a reduced but safe margin around all stage edges.
+5. Preview at both full-slide and reduced viewport sizes. Check for overflow, clipped text, tiny type, broken image URLs, invalid claims, titles that wrap unnecessarily, and one-sided card borders. Keep a reduced but safe margin around all stage edges.
 
 ## Editing an existing deck
 

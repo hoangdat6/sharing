@@ -1,0 +1,1467 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>CI/CD trong thời đại AI — Kaopiz Sharing</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+      :root {
+        --paper: #F3F6F9;
+        --ink: #0B1B2B;
+        --accent: #3C9CD7;
+        --line: #C9D5DC;
+        --muted: #52636F;
+        --radius: 10px;
+        --font-sans: "Be Vietnam Pro", sans-serif;
+        --font-mono: "IBM Plex Mono", monospace;
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; overflow: hidden; background: #0B1B2B; color: var(--ink); font-family: var(--font-sans); }
+      #viewport { width: 100vw; height: 100vh; display: grid; place-items: center; overflow: hidden; }
+      #stage { width: 1920px; height: 1080px; position: relative; flex: none; transform-origin: center center; background: var(--paper); overflow: hidden; }
+      
+      /* Base Slide */
+      .slide { position: absolute; inset: 0; display: none; padding: 64px 88px; grid-template-rows: auto 1fr auto; gap: 24px; }
+      .slide.is-active { display: grid; }
+      .slide--title { background: var(--paper); grid-template-columns: 1.1fr .9fr; align-items: center; }
+      
+      /* Header & Footer */
+      .slide__header { grid-column: 1 / -1; display: flex; align-items: flex-start; justify-content: space-between; gap: 32px; }
+      .brand-lockup { display: flex; justify-content: flex-end; align-items: center; min-width: 160px; height: 48px; }
+      .brand-lockup img { display: block; max-width: 160px; max-height: 48px; width: auto; height: auto; object-fit: contain; }
+      .eyebrow, .step { margin: 0; color: var(--accent); font: 500 19px/1.25 var(--font-mono); letter-spacing: .04em; text-transform: uppercase; }
+      h1, h2, h3, p { margin: 0; }
+      h1 { max-width: 1120px; font-size: 64px; line-height: 1.08; letter-spacing: -.05em; font-weight: 800; }
+      h2 { max-width: 1260px; font-size: 44px; line-height: 1.12; letter-spacing: -.04em; font-weight: 700; }
+      h3 { font-size: 28px; line-height: 1.2; letter-spacing: -.025em; font-weight: 700; }
+      .deck { max-width: 840px; color: #405261; font-size: 26px; line-height: 1.5; }
+      .cover-meta { display: flex; flex-wrap: wrap; gap: 14px 30px; margin-top: 32px; color: #52636f; font-size: 18px; line-height: 1.4; }
+      .cover-meta span { display: flex; align-items: baseline; gap: 9px; }
+      .cover-meta b { color: var(--accent); font: 500 15px/1 var(--font-mono); letter-spacing: .03em; text-transform: uppercase; }
+      .slide-footer { align-self: end; display: flex; justify-content: space-between; color: #71808b; font: 17px/1 var(--font-mono); }
+      
+      /* Layouts */
+      .two-col { display: grid; align-items: center; gap: 54px; }
+      .two-col--40-60 { grid-template-columns: 2fr 3fr; }
+      .two-col--60-40 { grid-template-columns: 3fr 2fr; }
+      .two-col--50-50 { grid-template-columns: 1fr 1fr; }
+      .two-col--45-55 { grid-template-columns: 45fr 55fr; }
+      .three-col { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; align-items: stretch; }
+      .three-col article { border: none; padding: 22px 24px; background: #fff; border-radius: var(--radius); box-shadow: 0 4px 18px rgba(11,27,43,0.05); }
+      .three-col p, .pipeline__step p { margin-top: 14px; color: #52636f; font-size: 22px; line-height: 1.45; }
+      .agenda { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; padding: 0; list-style: none; }
+      .agenda li { border: none; padding: 22px 24px; background: #fff; border-radius: var(--radius); box-shadow: 0 4px 18px rgba(11,27,43,0.05); }
+      .agenda li.is-active { box-shadow: 0 4px 22px rgba(235,67,67,0.18); }
+      .agenda span { display: block; margin-bottom: 24px; color: var(--accent); font: 500 17px var(--font-mono); }
+      .agenda strong { display: block; font-size: 28px; }
+      .agenda p { margin-top: 12px; color: #52636f; font-size: 20px; line-height: 1.45; }
+      .panel { padding: 34px; border: none; box-shadow: 0 4px 18px rgba(11,27,43,0.05); border-radius: var(--radius); background: #fff; }
+      .panel p { font-size: 24px; line-height: 1.5; color: var(--ink); }
+      .panel h3 { margin-bottom: 12px; }
+      .panel ul { margin: 12px 0 0; padding-left: 24px; font-size: 22px; line-height: 1.6; color: var(--muted); }
+
+      /* Components from skill */
+      .pipeline { display: flex; align-items: center; gap: 18px; align-self: center; width: 100%; }
+      .pipeline__step { flex: 1; min-height: 226px; padding: 28px; border-radius: var(--radius); background: #fff; border: none; box-shadow: 0 4px 18px rgba(11,27,43,0.05); }
+      .pipeline__step span { color: var(--accent); font: 500 17px var(--font-mono); }
+      .pipeline__step h3 { margin-top: 24px; }
+      .pipeline__arrow { width: 42px; height: 2px; background: var(--accent); position: relative; flex-shrink: 0; }
+      .pipeline__arrow::after { content: ""; position: absolute; right: 0; top: -5px; width: 11px; height: 11px; border-top: 2px solid var(--accent); border-right: 2px solid var(--accent); transform: rotate(45deg); }
+      .topic-icon { width: 30px; height: 30px; color: var(--accent); stroke-width: 1.8; vertical-align: middle; }
+      .pipeline__step .topic-icon { display: block; margin: 16px 0 -12px; }
+
+      .data-table { width: 100%; border-collapse: collapse; background: #fff; border-radius: var(--radius); overflow: hidden; font-size: 21px; align-self: center; box-shadow: 0 4px 18px rgba(11,27,43,0.05); }
+      .data-table th, .data-table td { padding: 19px 23px; text-align: left; border-bottom: 1px solid #D4DEE3; }
+      .data-table thead { background: var(--ink); color: #fff; }
+      .data-table tbody th { font-weight: 600; }
+      .data-table .is-highlighted { background: #DDEEF8; }
+
+      .comparison { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; align-self: center; width: 100%; }
+      .comparison > article { padding: 32px; border-radius: var(--radius); background: #fff; border: none; box-shadow: 0 4px 18px rgba(11,27,43,0.05); }
+      .comparison > article.is-recommended { box-shadow: 0 4px 24px rgba(235,67,67,0.16); }
+      
+      .quote { max-width: 1250px; padding-left: 28px; border-left: 5px solid var(--accent); font-size: 24px; line-height: 1.5; letter-spacing: -.01em; align-self: center; }
+      .quote cite { display: block; margin-top: 14px; color: #52636f; font: 15px/1.4 var(--font-mono); font-style: normal; letter-spacing: 0; }
+
+      /* Pyramid Stack */
+      .pyramid-stack { display: flex; flex-direction: column; gap: 12px; width: 100%; height: 100%; justify-content: center; }
+      .pyramid-tier { border-radius: var(--radius); padding: 22px 28px; color: #fff; }
+      .pyramid-tier--top { background: var(--accent); }
+      .pyramid-tier--mid { background: #1F74A7; }
+      .pyramid-tier--base { background: var(--ink); }
+      .pyramid-tier__header { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+      .pyramid-tier__num { font: 700 15px var(--font-mono); background: rgba(255,255,255,0.22); padding: 4px 10px; border-radius: 6px; flex-shrink: 0; }
+      .pyramid-tier h3 { font-size: 20px; color: #fff; margin: 0; letter-spacing: -0.01em; font-weight: 700; }
+      .pyramid-tier p { font-size: 17px; margin: 0; color: rgba(255,255,255,0.82); line-height: 1.5; }
+
+      .cover-map { display: grid; gap: 16px; }
+      .cover-map article { padding: 22px 24px; background: #fff; border: none; box-shadow: 0 4px 18px rgba(11,27,43,0.05); border-radius: var(--radius); }
+      .cover-map span { display: block; margin-bottom: 8px; color: var(--accent); font: 500 14px/1 var(--font-mono); letter-spacing: .06em; }
+      .cover-map p { font: 500 20px/1.45 var(--font-mono); margin: 0; }
+
+      /* Pipeline Components */
+      .pipeline-anatomy { position:relative; display:flex; align-items:flex-start; align-self:center; width:100%; min-height:420px; padding:8px 4px 0; }
+      .pipeline-anatomy__spine { position:absolute; left:80px; right:36px; top:104px; height:2px; background:var(--ink); z-index:0; }
+      .pipeline-anatomy__col { position:relative; z-index:1; display:grid; grid-template-rows:56px 80px auto auto; justify-items:center; min-width:0; }
+      .pipeline-anatomy > .pipeline-anatomy__col { flex:0 0 148px; }
+      .pipeline-anatomy > .pipeline-anatomy__col--start { flex:0 0 160px; }
+      .pipeline-anatomy > .pipeline-anatomy__col--branch { flex:0 0 128px; }
+      .pipeline-anatomy__icon { width:32px; height:32px; align-self:center; color:var(--ink); }
+      .pipeline-anatomy .topic-icon { width:32px; height:32px; color:var(--ink); }
+      .pipeline-anatomy__box { display:grid; place-items:center; width:72px; height:72px; margin-top:4px; border-radius:14px; background:#fff; border:2px solid var(--ink); }
+      .pipeline-anatomy__box--ink { background:var(--ink); border-color:var(--ink); }
+      .pipeline-anatomy__box--ink .topic-icon { color:var(--paper); }
+      .pipeline-anatomy__dot { width:16px; height:16px; margin-top:32px; border-radius:50%; background:var(--paper); border:3px solid var(--ink); box-sizing:border-box; }
+      .pipeline-anatomy__label { margin-top:14px; text-align:center; font:500 14px/1.3 var(--font-mono); letter-spacing:.04em; text-transform:uppercase; }
+      .pipeline-anatomy__sub { display:block; font:400 11px/1.5 var(--font-mono); color:var(--muted); text-transform:none; letter-spacing:0; margin-top:4px; }
+      .pipeline-anatomy__related { position:relative; grid-row:4; display:grid; justify-items:center; gap:10px; margin-top:12px; }
+      .pipeline-anatomy__related::before { content:""; position:absolute; top:-92px; left:50%; width:2px; height:92px; background:var(--ink); }
+      .pipeline-anatomy__zone { position:relative; z-index:1; flex:1 1 0; display:flex; margin:0 10px; margin-top:-12px; padding:12px 8px 36px; border:1.5px dashed var(--accent); border-radius:var(--radius); }
+      .pipeline-anatomy__zone::after { content:attr(data-zone); position:absolute; left:50%; bottom:-11px; transform:translateX(-50%); padding:0 8px; background:var(--paper); color:var(--accent); font:500 13px/1 var(--font-mono); letter-spacing:.08em; white-space:nowrap; }
+      .pipeline-anatomy__zone .pipeline-anatomy__col { flex:1; }
+
+      .pipeline-stack { list-style: none; margin: 0; padding: 0; width: 100%; max-width: 540px; align-self: center; }
+      .pipeline-stack li { display: grid; grid-template-columns: 52px 1fr; gap: 16px; align-items: center; padding: 13px 18px; background: #fff; border: 1px solid var(--line); border-bottom: 0; }
+      .pipeline-stack li:first-child { border-radius: var(--radius) var(--radius) 0 0; }
+      .pipeline-stack li:last-child { border-bottom: 1px solid var(--line); border-radius: 0 0 var(--radius) var(--radius); }
+      .pipeline-stack span { color: var(--accent); font: 500 16px var(--font-mono); }
+      .pipeline-stack code { font: 500 22px/1.3 var(--font-mono); }
+      .pipeline-stack p { color: #52636f; font-size: 18px; margin-top: 4px; }
+      .pipeline-stack li.pipeline-stack__gate { background: var(--ink); color: #fff; border-color: var(--ink); }
+      .pipeline-stack li.pipeline-stack__gate span { color: var(--accent); }
+      .pipeline-stack li.pipeline-stack__gate p { color: #d5e3ec; }
+
+      .pipeline-stack--cut { display: flex; flex-direction: column; gap: 0; width: 100%; max-width: 560px; }
+      .pipeline-stack__region[data-region]::before { content: attr(data-region); display: block; margin: 0 0 8px; color: var(--accent); font: 500 14px/1 var(--font-mono); letter-spacing: .08em; }
+      .pipeline-stack__cut { display: flex; align-items: center; gap: 14px; margin: 10px 0; color: var(--accent); font: 500 15px/1 var(--font-mono); letter-spacing: .06em; }
+      .pipeline-stack__cut::before, .pipeline-stack__cut::after { content: ""; flex: 1; height: 2px; background: var(--accent); }
+
+      .pipeline-converge { display: grid; grid-template-rows: auto auto auto; justify-items: center; align-content: center; align-self: center; gap: 8px; width: 100%; min-height: 0; }
+      .pipeline-converge__actors { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: start; width: min(920px, 100%); }
+      .pipeline-converge__actors article { padding: 28px; background: #fff; border: none; box-shadow: 0 4px 18px rgba(11,27,43,0.05); border-radius: var(--radius); text-align: center; }
+      .pipeline-converge__actors .topic-icon { display: block; margin: 0 auto 14px; width: 36px; height: 36px; }
+      .pipeline-converge__actors p { margin-top: 10px; color: #52636f; font-size: 20px; }
+      .pipeline-converge__bypass { margin: 6px 0 0; color: var(--accent); font: 500 14px/1 var(--font-mono); letter-spacing: .08em; text-transform: uppercase; }
+      .pipeline-converge__gate { min-width: 320px; padding: 26px 32px; text-align: center; background: #fff; border: none; box-shadow: 0 4px 22px rgba(11,27,43,0.1); border-radius: var(--radius); }
+      .pipeline-converge__gate span { display: block; color: var(--accent); font: 500 14px/1 var(--font-mono); letter-spacing: .08em; }
+      .pipeline-converge__gate code { display: block; margin-top: 10px; font: 600 24px/1.2 var(--font-mono); }
+      .pipeline-converge__out { margin-top: 4px; color: #52636f; font: 500 18px var(--font-mono); }
+      .pipeline-converge__gate, .pipeline-converge__out { position: relative; }
+      .pipeline-converge__gate::before, .pipeline-converge__out::before { content: ""; position: absolute; left: 50%; width: 2px; height: 18px; background: var(--ink); }
+      .pipeline-converge__gate::before { top: -18px; } .pipeline-converge__out::before { top: -18px; }
+
+      .pipeline-parallel { display: flex; align-items: stretch; align-self: center; gap: 22px; width: 100%; }
+      .pipeline-parallel__step { flex: 0 0 240px; padding: 28px; background: #fff; border: none; box-shadow: 0 4px 18px rgba(11,27,43,0.05); border-radius: var(--radius); }
+      .pipeline-parallel__step span { color: var(--accent); font: 500 16px var(--font-mono); }
+      .pipeline-parallel__step h3 { margin-top: 18px; }
+      .pipeline-parallel__fan { position: relative; flex: 1; display: grid; gap: 12px; padding: 28px 22px 18px; border: 1.5px dashed var(--accent); border-radius: var(--radius); }
+      .pipeline-parallel__fan::before { content: attr(data-label); position: absolute; top: -10px; left: 18px; padding: 0 8px; background: var(--paper); color: var(--accent); font: 500 13px/1 var(--font-mono); letter-spacing: .08em; text-transform: uppercase; }
+      .pipeline-parallel__fan article { padding: 16px 18px; background: #fff; border: none; box-shadow: 0 4px 18px rgba(11,27,43,0.05); border-radius: var(--radius); }
+
+      /* Code Block */
+      .code-block { margin: 0; overflow: hidden; border-radius: var(--radius); background: var(--ink); color: #E8EEF4; width: 100%; }
+      .code-block__chrome { display: flex; align-items: center; justify-content: space-between; padding: 14px 22px; background: #07131D; color: #9BB0BE; font: 500 16px/1 var(--font-mono); }
+      .code-block__lang { color: var(--accent); letter-spacing: .06em; text-transform: uppercase; }
+      .code-block__body { margin: 0; padding: 20px 0 24px; overflow: auto; font: 500 22px/1.55 var(--font-mono); }
+      .code-block__line { display: block; padding: 0 28px; white-space: pre; }
+      .code-block__line.is-highlight { background: rgba(60,156,215,.2); box-shadow: inset 4px 0 0 var(--accent); }
+      .code-block--diff .is-del { background: rgba(180,60,60,.22); color: #F5C4C4; }
+      .code-block--diff .is-add { background: rgba(46,140,90,.22); color: #C4F0D4; }
+      .code-block--term .is-ok { color: #8EE0B0; } .code-block--term .is-fail { color: #F5A3A3; }
+      .code-block__prompt { color: var(--accent); margin-right: 10px; }
+      
+      .two-col:has(.code-block), .two-col:has(.pipeline-stack) { align-items: start; }
+      .quote, .comparison, .pipeline-stack, .pipeline-stack--cut { align-self: center; }
+
+      /* Ecosystem annotation layer */
+      .pipeline-with-eco { display:flex; flex-direction:column; gap:0; width:100%; align-self:center; }
+      .pipeline-with-eco .pipeline-anatomy { min-height:0; padding-bottom:0; margin-bottom:4px; }
+      .eco-row { display:flex; width:100%; }
+      .eco-row--above { align-items:flex-end; min-height:110px; margin-bottom:-6px; }
+      .eco-row--below { align-items:flex-start; min-height:110px; margin-top:-6px; }
+      .eco-spacer-start { flex:0 0 160px; flex-shrink:0; }
+      .eco-spacer-end  { flex:0 0 148px; flex-shrink:0; }
+      .eco-zone { flex:1 1 0; display:flex; justify-content:center; align-items:inherit; }
+      /* Node = connector + label + bubble-row */
+      .eco-node { display:flex; flex-direction:column; align-items:center; gap:0; }
+      .eco-connector { width:2px; height:24px; background:var(--accent); opacity:0.8; flex-shrink:0; }
+      .eco-label { font:700 11px/1 var(--font-mono); color:var(--accent); text-transform:uppercase; letter-spacing:.08em; margin:5px 0 6px; }
+      /* Bubble row */
+      .eco-bubble-row { display:flex; align-items:flex-start; justify-content:center; gap:10px; }
+      .eco-row--above .eco-bubble-row { align-items:flex-end; }
+      /* Single bubble card */
+      .eco-bubble { display:flex; flex-direction:column; align-items:center; gap:6px;
+        width:88px; padding:10px 6px 9px;
+        background:#fff; border:none; border-radius:12px;
+        box-shadow:0 4px 14px rgba(11,27,43,.08);
+        font:500 10px/1.3 var(--font-mono); text-align:center; color:var(--ink); }
+      .eco-bubble__icon { width:32px; height:32px; display:flex; align-items:center; justify-content:center; border-radius:8px; flex-shrink:0; }
+      .eco-bubble__icon svg { width:22px; height:22px; display:block; }
+      .eco-bubble__icon .topic-icon { width:20px; height:20px; }
+      .eco-bubble__name { font:500 10px/1.3 var(--font-mono); }
+      /* Animation */
+      @keyframes eco-up   { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:none; } }
+      @keyframes eco-down { from { opacity:0; transform:translateY(-16px); } to { opacity:1; transform:none; } }
+      .eco-row--below .eco-node { opacity:0; }
+      .eco-row--above .eco-node { opacity:0; }
+      .eco-node--visible { opacity:1 !important; }
+      .is-active .eco-row--below .eco-node:not(.eco-node--visible) { animation:eco-up   .4s ease both; }
+      .is-active .eco-row--above .eco-node:not(.eco-node--visible) { animation:eco-down .4s ease both; }
+
+      /* Risk Grid Component for Slide 9 */
+      .risk-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; width: 100%; }
+      .risk-card { padding: 18px 20px; background: #fff; border: none; border-radius: var(--radius); display: flex; flex-direction: column; gap: 8px; box-shadow: 0 4px 18px rgba(11,27,43,0.06); }
+      .risk-card__header { display: flex; align-items: center; justify-content: space-between; }
+      .risk-card__icon { width: 36px; height: 36px; border-radius: 10px; background: rgba(235,67,67,0.1); display: grid; place-items: center; flex-shrink: 0; }
+      .risk-card__icon .topic-icon { width: 22px; height: 22px; color: #EB4343; }
+      .risk-card__badge { padding: 4px 10px; border-radius: 12px; background: #FDE8E8; color: #D32F2F; font: 600 11px/1 var(--font-mono); text-transform: uppercase; letter-spacing: 0.04em; }
+      .risk-card h3 { font-size: 18px; margin: 4px 0 0; color: var(--ink); font-weight: 700; line-height: 1.3; }
+      .risk-card p { font-size: 14px; color: #52636f; margin: 0; line-height: 1.45; }
+      
+      .risk-alert-banner { grid-column: 1 / -1; display: flex; align-items: center; gap: 12px; padding: 14px 20px; background: #FFF4E5; border: 1.5px solid #FFE0B2; border-radius: var(--radius); color: #B78103; font: 500 14px/1.4 var(--font-mono); }
+      .risk-alert-banner .topic-icon { width: 22px; height: 22px; color: #B78103; flex-shrink: 0; }
+
+      /* Window Dots & Code Utilities */
+      .code-block__dots { display: flex; gap: 6px; align-items: center; }
+      .code-block__dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+      .code-block__dot--red { background: #FF5F56; }
+      .code-block__dot--yellow { background: #FFBD2E; }
+      .code-block__dot--green { background: #27C93F; }
+      .code-block--full { margin: 0; display: flex; flex-direction: column; height: 100%; }
+      .code-block--full .code-block__body { flex: 1; }
+      .code-block__tag-danger { color: #FF5F56; font-weight: 700; }
+      .two-col--stretch { align-items: stretch; }
+
+      /* Controls & Print */
+      .controls { position: fixed; right: 20px; bottom: 18px; display: flex; gap: 8px; z-index: 999; }
+      .controls button { width: 38px; height: 34px; border: 1px solid #789; border-radius: 7px; background: #fff; color: var(--ink); cursor: pointer; }
+      
+      @media print {
+        body, #viewport { background: #fff; overflow: visible; height: auto; display: block; }
+        #stage { transform: none !important; width: 1920px; height: auto; position: static; background: none; }
+        .slide { display: grid !important; position: relative !important; page-break-after: always; break-after: page; width: 1920px; height: 1080px; margin: 0; }
+        .controls { display: none !important; }
+      }
+    </style>
+  </head>
+  <body>
+    <main id="viewport" aria-live="polite">
+      <div id="stage">
+
+        <!-- SLIDE 1: Title -->
+        <section class="slide slide--title is-active" data-slide>
+          <header class="slide__header">
+            <p class="eyebrow">Kaopiz Sharing / 2026</p>
+            <div class="brand-lockup"><img src="assets/kaopiz-logo.svg" alt="Kaopiz"></div>
+          </header>
+          <div class="title-copy">
+            <h1>CI/CD và phát hành cơ bản</h1>
+            <p class="deck">"AI bảo pass" chỉ là bước kiểm tra đầu tiên, không phải điểm kết thúc. Hãy để pipeline trả lời.</p>
+            <div class="cover-meta" aria-label="Thông tin trình bày">
+              <span><b>Tác giả</b> Huỳnh Bá Nhân</span>
+              <span><b>Thời gian</b> Kaopiz 2026</span>
+            </div>
+          </div>
+          <div class="cover-map" aria-label="Tuyên bố câu chuyện">
+            <article><span>AI AGENT</span><p>"Code đã ổn, typecheck & test pass 100%!"</p></article>
+            <article><span>DEVELOPER</span><p>"Chắc là ổn... để push thử xem sao."</p></article>
+            <article><span>PIPELINE</span><p>Môi trường kiểm định độc lập — Khách quan 100%.</p></article>
+          </div>
+          <footer class="slide-footer"><span>CI/CD VÀ PHÁT HÀNH CƠ BẢN</span><span>01 / 24</span></footer>
+        </section>
+
+        <!-- SLIDE 2: Agenda -->
+        <section class="slide" data-slide>
+          <header class="slide__header">
+            <div><p class="eyebrow">agenda</p><h2>Mục lục nội dung chia sẻ</h2></div>
+            <div class="brand-lockup"><img src="assets/kaopiz-logo.svg" alt="Kaopiz"></div>
+          </header>
+          <ol class="agenda" aria-label="Nội dung">
+            <li><span>01</span><strong>Tình huống thực tế</strong><p>Local xanh, CI đỏ — câu chuyện AI tự test.</p></li>
+            <li><span>02</span><strong>Bản chất CI</strong><p>Môi trường kiểm tra độc lập & cổng Gate.</p></li>
+            <li><span>03</span><strong>Công cụ & Tác vụ</strong><p>6 tác vụ chuẩn & bản đồ thị trường.</p></li>
+            <li><span>04</span><strong>Deploy & CD</strong><p>Deploy thủ công vs Delivery & Deployment.</p></li>
+            <li><span>05</span><strong>4 Demo thực tế</strong><p>GitHub Actions → Docker Hub → EC2 server.</p></li>
+            <li><span>06</span><strong>Issues khi Deploy</strong><p>Lệch môi trường, test sai phạm vi, pipeline fail im lặng.</p></li>
+            <li><span>07</span><strong>Khắc phục trước Deploy</strong><p>Cấu hình pipeline &amp; tổng kết CI/CD.</p></li>
+          </ol>
+          <footer class="slide-footer"><span>CI/CD IN THE AI ERA</span><span>02 / 24</span></footer>
+        </section>
+
+        <!-- SLIDE 3: Hook Split Terminal -->
+        <section class="slide" data-slide>
+          <header class="slide__header">
+            <div><p class="eyebrow">03 / Tình huống</p><h2>Cùng một bộ lệnh: Local xanh nhưng CI lại đỏ</h2></div>
+            <div class="brand-lockup"><img src="assets/kaopiz-logo.svg" alt="Kaopiz"></div>
+          </header>
+          <div class="two-col two-col--50-50">
+            <figure class="code-block code-block--term">
+              <figcaption class="code-block__chrome"><span class="code-block__file">local-developer-laptop</span><span class="code-block__lang">PASS</span></figcaption>
+              <pre class="code-block__body"><code><span class="code-block__line"><span class="code-block__prompt">$</span> npm run typecheck</span>
+<span class="code-block__line">✓ Verified 58 modules in /src</span>
+<span class="code-block__line is-ok">✓ 0 errors found. Type Check passed!</span>
+<span class="code-block__line"></span>
+<span class="code-block__line"><span class="code-block__prompt">$</span> npm test</span>
+<span class="code-block__line is-ok">PASS  src/auth/login.test.ts</span>
+<span class="code-block__line is-ok">PASS  src/services/api.test.ts</span>
+<span class="code-block__line is-ok">Tests: 18 passed, 18 total</span></code></pre>
+            </figure>
+            <figure class="code-block code-block--term">
+              <figcaption class="code-block__chrome"><span class="code-block__file">github-actions-ci-108</span><span class="code-block__lang" style="color:var(--muted);">FAILED</span></figcaption>
+              <pre class="code-block__body"><code><span class="code-block__line">1. Install dependencies   npm ci            <span class="is-ok">✓ Pass</span></span>
+<span class="code-block__line">2. Lint & Format           eslint .          <span class="is-ok">✓ Pass</span></span>
+<span class="code-block__line is-fail">3. Type Check              tsc --noEmit      ✗ FAIL</span>
+<span class="code-block__line">4. Unit Test               vitest run        <span style="color:var(--muted);">— Hủy</span></span>
+<span class="code-block__line">5. Build                   vite build        <span style="color:var(--muted);">— Hủy</span></span>
+<span class="code-block__line is-fail">TS2322: Type 'string' is not assignable to type 'number'</span></code></pre>
+            </figure>
+          </div>
+          <footer class="slide-footer"><span>ĐẾN ĐÂY, ANH EM ĐÃ ĐỦ TỰ TIN ĐỂ PUSH CHƯA?</span><span>03 / 24</span></footer>
+        </section>
+
+        <!-- SLIDE 4: Pending Question -->
+        <section class="slide" data-slide>
+          <header class="slide__header">
+            <div><p class="eyebrow">04 / Câu hỏi treo</p><h2>Tuyên bố chưa kiểm chứng</h2></div>
+            <div class="brand-lockup"><img src="assets/kaopiz-logo.svg" alt="Kaopiz"></div>
+          </header>
+          <div class="two-col two-col--40-60">
+            <div>
+              <p class="eyebrow">Câu hỏi xuyên suốt</p>
+              <h3>Cùng một bộ lệnh. Cùng một repository. Tại sao local xanh mà CI lại đỏ?</h3>
+              <p class="deck" style="margin-top:20px;">Đừng chỉ tin lời khẳng định của AI hay kinh nghiệm cá nhân. Hãy để hệ thống kiểm chứng độc lập.</p>
+            </div>
+            <div class="panel">
+              <p class="eyebrow" style="margin-bottom:12px;">Claude Code (AI Agent)</p>
+              <h3 style="margin-bottom:16px;">"Code đã Type Check pass & Unit Test pass hết rồi!"</h3>
+              <p style="color:var(--muted); font-size:20px;">[TRẠNG THÁI: CHƯA KIỂM CHỨNG TRÊN RUNNER ĐỘC LẬP]</p>
+            </div>
+          </div>
+          <footer class="slide-footer"><span>TRẢ LỜI CHI TIẾT TẠI PHẦN 7 — ISSUES KHI DEPLOY</span><span>04 / 24</span></footer>
+        </section>
+
+        <!-- SLIDE 5: Definition & Pyramid Stack -->
+        <section class="slide" data-slide>
+          <header class="slide__header">
+            <div><p class="eyebrow">05 / Bản chất CI</p><h2>Continuous Integration (CI) là gì?</h2></div>
+            <div class="brand-lockup"><img src="assets/kaopiz-logo.svg" alt="Kaopiz"></div>
+          </header>
+          <div class="two-col two-col--40-60" style="align-items:stretch;">
+            <div style="display:flex; flex-direction:column; gap:20px; justify-content:center;">
+              <blockquote class="quote">Continuous Integration (Tích hợp liên tục) là thực hành phát triển phần mềm mà các thành viên thường xuyên tích hợp mã vào kho chung. Mỗi lần tích hợp được tự động xác minh bằng build & test độc lập để phát hiện lỗi sớm nhất có thể.
+                <cite>Martin Fowler — continuousintegration.martinfowler.com</cite>
+              </blockquote>
+              <div class="panel">
+                <p class="eyebrow" style="margin-bottom:10px;">Bản chất độc lập</p>
+                <p>CI là hệ thống kiểm tra tự động tách biệt hoàn toàn với máy cá nhân — đảm bảo mọi thay đổi được xác minh trên môi trường sạch trước khi merge.</p>
+              </div>
+            </div>
+
+            <div class="pyramid-stack" aria-label="3 Tầng kiểm tra Code Review & CI">
+              <div class="pyramid-tier pyramid-tier--top">
+                <div class="pyramid-tier__header">
+                  <span class="pyramid-tier__num">03</span>
+                  <h3>Hệ thống CI (Automated Runner)</h3>
+                </div>
+                <p>Chấm độc lập trên Runner sạch — Kiểm tra tự động 100% khách quan trước khi Merge.</p>
+              </div>
+              <div class="pyramid-tier pyramid-tier--mid">
+                <div class="pyramid-tier__header">
+                  <span class="pyramid-tier__num">02</span>
+                  <h3>Code Review (Peer Review)</h3>
+                </div>
+                <p>Đồng nghiệp xem PR — Đánh giá kiến trúc, logic nghiệp vụ & thiết kế giải pháp.</p>
+              </div>
+              <div class="pyramid-tier pyramid-tier--base">
+                <div class="pyramid-tier__header">
+                  <span class="pyramid-tier__num">01</span>
+                  <h3>Tự kiểm tra (Dev / AI)</h3>
+                </div>
+                <p>Lập trình viên / AI tự chạy test trên máy local — Tự chấm bài bằng tư duy chủ quan.</p>
+              </div>
+            </div>
+          </div>
+          <footer class="slide-footer"><span>CI TẠO RA MÔI TRƯỜNG KIỂM TRA ĐỘC LẬP VỚI MÁY DEVELOPER</span><span>05 / 24</span></footer>
+        </section>
+
+        <!-- SLIDE 6: CI Pipeline Anatomy -->
+        <section class="slide" data-slide>
+          <header class="slide__header">
+            <div><p class="eyebrow">06 / CI Flow</p><h2>Các bước bên trong một CI Pipeline</h2></div>
+            <div class="brand-lockup"><img src="assets/kaopiz-logo.svg" alt="Kaopiz"></div>
+          </header>
+
+          <div class="pipeline-anatomy" aria-label="CI Pipeline các bước">
+            <i class="pipeline-anatomy__spine" aria-hidden="true"></i>
+
+            <!-- TRIGGER -->
+            <div class="pipeline-anatomy__col pipeline-anatomy__col--start">
+              <span class="pipeline-anatomy__icon"></span>
+              <span class="pipeline-anatomy__box pipeline-anatomy__box--ink">
+                <i class="topic-icon" data-lucide="git-pull-request" aria-hidden="true"></i>
+              </span>
+              <p class="pipeline-anatomy__label">TRIGGER<span class="pipeline-anatomy__sub">git push / PR</span></p>
+            </div>
+
+            <!-- Zone: CHUẨN BỊ -->
+            <div class="pipeline-anatomy__zone" data-zone="CHUẨN BỊ">
+              <div class="pipeline-anatomy__col">
+                <i class="topic-icon pipeline-anatomy__icon" data-lucide="download" aria-hidden="true"></i>
+                <span class="pipeline-anatomy__dot"></span>
+                <p class="pipeline-anatomy__label">CHECKOUT<span class="pipeline-anatomy__sub">actions/checkout</span></p>
+              </div>
+              <div class="pipeline-anatomy__col">
+                <i class="topic-icon pipeline-anatomy__icon" data-lucide="package" aria-hidden="true"></i>
+                <span class="pipeline-anatomy__dot"></span>
+                <p class="pipeline-anatomy__label">INSTALL<span class="pipeline-anatomy__sub">npm ci</span></p>
+              </div>
+            </div>
+
+            <!-- Zone: KIỂM ĐỊNH -->
+            <div class="pipeline-anatomy__zone" data-zone="KIỂM ĐỊNH">
+              <div class="pipeline-anatomy__col">
+                <i class="topic-icon pipeline-anatomy__icon" data-lucide="scan-text" aria-hidden="true"></i>
+                <span class="pipeline-anatomy__dot"></span>
+                <p class="pipeline-anatomy__label">LINT<span class="pipeline-anatomy__sub">eslint .</span></p>
+              </div>
+              <div class="pipeline-anatomy__col">
+                <i class="topic-icon pipeline-anatomy__icon" data-lucide="type" aria-hidden="true"></i>
+                <span class="pipeline-anatomy__dot"></span>
+                <p class="pipeline-anatomy__label">TYPE CHECK<span class="pipeline-anatomy__sub">tsc --noEmit</span></p>
+              </div>
+              <div class="pipeline-anatomy__col">
+                <i class="topic-icon pipeline-anatomy__icon" data-lucide="flask-conical" aria-hidden="true"></i>
+                <span class="pipeline-anatomy__dot"></span>
+                <p class="pipeline-anatomy__label">UNIT TEST<span class="pipeline-anatomy__sub">vitest run</span></p>
+              </div>
+            </div>
+
+            <!-- Zone: BUILD & SECURITY -->
+            <div class="pipeline-anatomy__zone" data-zone="BUILD & SECURITY">
+              <div class="pipeline-anatomy__col">
+                <i class="topic-icon pipeline-anatomy__icon" data-lucide="box" aria-hidden="true"></i>
+                <span class="pipeline-anatomy__dot"></span>
+                <p class="pipeline-anatomy__label">BUILD<span class="pipeline-anatomy__sub">vite build</span></p>
+              </div>
+              <div class="pipeline-anatomy__col">
+                <i class="topic-icon pipeline-anatomy__icon" data-lucide="shield-alert" aria-hidden="true"></i>
+                <span class="pipeline-anatomy__dot"></span>
+                <p class="pipeline-anatomy__label">SECURITY<span class="pipeline-anatomy__sub">gitleaks</span></p>
+              </div>
+            </div>
+
+            <!-- GATE -->
+            <div class="pipeline-anatomy__col">
+              <span class="pipeline-anatomy__icon"></span>
+              <span class="pipeline-anatomy__box pipeline-anatomy__box--ink">
+                <i class="topic-icon" data-lucide="lock" aria-hidden="true"></i>
+              </span>
+              <p class="pipeline-anatomy__label">GATE<span class="pipeline-anatomy__sub">all pass → merge</span></p>
+            </div>
+          </div>
+
+          <footer class="slide-footer"><span>1 BƯỚC FAIL → PIPELINE DỪNG NGAY, CÁC BƯỚC SAU BỊ HỦY</span><span>06 / 24</span></footer>
+        </section>
+
+        <!-- SLIDE 7: Ecosystem Layer 1 – CI Platform bubbles below CHUẨN BỊ -->
+        <section class="slide" data-slide>
+          <header class="slide__header">
+            <div><p class="eyebrow">07 / Ecosystem</p><h2>CI Pipeline & Công cụ nền tảng</h2></div>
+            <div class="brand-lockup"><img src="assets/kaopiz-logo.svg" alt="Kaopiz"></div>
+          </header>
+          <div class="pipeline-with-eco">
+            <div class="pipeline-anatomy" aria-label="CI Pipeline">
+              <i class="pipeline-anatomy__spine" aria-hidden="true"></i>
+              <div class="pipeline-anatomy__col pipeline-anatomy__col--start">
+                <span class="pipeline-anatomy__icon"></span>
+                <span class="pipeline-anatomy__box pipeline-anatomy__box--ink"><i class="topic-icon" data-lucide="git-pull-request" aria-hidden="true"></i></span>
+                <p class="pipeline-anatomy__label">TRIGGER<span class="pipeline-anatomy__sub">git push / PR</span></p>
+              </div>
+              <div class="pipeline-anatomy__zone" data-zone="CHUẨN BỊ">
+                <div class="pipeline-anatomy__col"><i class="topic-icon pipeline-anatomy__icon" data-lucide="download" aria-hidden="true"></i><span class="pipeline-anatomy__dot"></span><p class="pipeline-anatomy__label">CHECKOUT<span class="pipeline-anatomy__sub">actions/checkout</span></p></div>
+                <div class="pipeline-anatomy__col"><i class="topic-icon pipeline-anatomy__icon" data-lucide="package" aria-hidden="true"></i><span class="pipeline-anatomy__dot"></span><p class="pipeline-anatomy__label">INSTALL<span class="pipeline-anatomy__sub">npm ci</span></p></div>
+              </div>
+              <div class="pipeline-anatomy__zone" data-zone="KIỂM ĐỊNH">
+                <div class="pipeline-anatomy__col"><i class="topic-icon pipeline-anatomy__icon" data-lucide="scan-text" aria-hidden="true"></i><span class="pipeline-anatomy__dot"></span><p class="pipeline-anatomy__label">LINT<span class="pipeline-anatomy__sub">eslint .</span></p></div>
+                <div class="pipeline-anatomy__col"><i class="topic-icon pipeline-anatomy__icon" data-lucide="type" aria-hidden="true"></i><span class="pipeline-anatomy__dot"></span><p class="pipeline-anatomy__label">TYPE CHECK<span class="pipeline-anatomy__sub">tsc --noEmit</span></p></div>
+                <div class="pipeline-anatomy__col"><i class="topic-icon pipeline-anatomy__icon" data-lucide="flask-conical" aria-hidden="true"></i><span class="pipeline-anatomy__dot"></span><p class="pipeline-anatomy__label">UNIT TEST<span class="pipeline-anatomy__sub">vitest run</span></p></div>
+              </div>
+              <div class="pipeline-anatomy__zone" data-zone="BUILD &amp; SECURITY">
+                <div class="pipeline-anatomy__col"><i class="topic-icon pipeline-anatomy__icon" data-lucide="box" aria-hidden="true"></i><span class="pipeline-anatomy__dot"></span><p class="pipeline-anatomy__label">BUILD<span class="pipeline-anatomy__sub">vite build</span></p></div>
+                <div class="pipeline-anatomy__col"><i class="topic-icon pipeline-anatomy__icon" data-lucide="shield-alert" aria-hidden="true"></i><span class="pipeline-anatomy__dot"></span><p class="pipeline-anatomy__label">SECURITY<span class="pipeline-anatomy__sub">gitleaks</span></p></div>
+              </div>
+              <div class="pipeline-anatomy__col">
+                <span class="pipeline-anatomy__icon"></span>
+                <span class="pipeline-anatomy__box pipeline-anatomy__box--ink"><i class="topic-icon" data-lucide="lock" aria-hidden="true"></i></span>
+                <p class="pipeline-anatomy__label">GATE<span class="pipeline-anatomy__sub">all pass → merge</span></p>
+              </div>
+            </div>
+            <!-- Below: CI Platform bubbles animate UP from CHUẨN BỊ -->
+            <div class="eco-row eco-row--below">
+              <div class="eco-spacer-start"></div>
+              <div class="eco-zone">
+                <div class="eco-node">
+                  <div class="eco-connector"></div>
+                  <p class="eco-label">CI Platform</p>
+                  <div class="eco-bubble-row">
+                    <!-- GitHub Actions -->
+                    <div class="eco-bubble">
+                      <div class="eco-bubble__icon" style="background:#1B1F23">
+                        <svg viewBox="0 0 24 24" fill="#fff"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+                      </div>
+                      <span class="eco-bubble__name">GitHub<br>Actions</span>
+                    </div>
+                    <!-- GitLab CI -->
+                    <div class="eco-bubble">
+                      <div class="eco-bubble__icon" style="background:#FC6D26">
+                        <svg viewBox="0 0 24 24" fill="#fff"><path d="M22.65 14.39L12 22.13 1.35 14.39a.84.84 0 01-.3-.94l1.22-3.78 2.44-7.51A.42.42 0 014.82 2a.43.43 0 01.58 0 .42.42 0 01.11.18l2.44 7.49h8.1l2.44-7.51A.42.42 0 0119.18 2a.43.43 0 01.58 0 .42.42 0 01.11.18l2.44 7.51L23.5 13.45a.84.84 0 01-.85.94z"/></svg>
+                      </div>
+                      <span class="eco-bubble__name">GitLab CI</span>
+                    </div>
+                    <!-- Jenkins -->
+                    <div class="eco-bubble">
+                      <div class="eco-bubble__icon" style="background:#D33833">
+                        <svg viewBox="0 0 24 24" fill="#fff"><path d="M8 3h8v2H8zm-1 3h10v1H7zm-.5 2h11l1 3-1 .5V20H6.5V11.5L5.5 11zm2 3v7h7v-7zm1 1h5v1h-5zm0 2h5v1h-5zm0 2h3v1h-3z"/></svg>
+                      </div>
+                      <span class="eco-bubble__name">Jenkins</span>
+                    </div>
+                    <!-- CircleCI -->
+                    <div class="eco-bubble">
+                      <div class="eco-bubble__icon" style="background:#343434">
+                        <svg viewBox="0 0 24 24" fill="#fff"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm0 4.5a7.5 7.5 0 110 15 7.5 7.5 0 010-15zm0 2.5a5 5 0 100 10A5 5 0 0012 7zm0 2a3 3 0 110 6 3 3 0 010-6z"/></svg>
+                      </div>
+                      <span class="eco-bubble__name">CircleCI</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="eco-zone"></div>
+              <div class="eco-zone"></div>
+              <div class="eco-spacer-end"></div>
+            </div>
+          </div>
+          <footer class="slide-footer"><span>PLATFORM = NỀN TẢNG TRIGGER JOBS VÀ CUNG CẤP RUNNER SẠCH MỖI LẦN</span><span>07 / 24</span></footer>
+        </section>
+
+        <!-- SLIDE 8: Ecosystem Layer 2 – Lint/Test (above) + Security (below) with bubbles -->
+        <section class="slide" data-slide>
+          <header class="slide__header">
+            <div><p class="eyebrow">08 / Ecosystem</p><h2>Công cụ kiểm định & bảo mật</h2></div>
+            <div class="brand-lockup"><img src="assets/kaopiz-logo.svg" alt="Kaopiz"></div>
+          </header>
+          <div class="pipeline-with-eco">
+            <!-- Above: Lint & Test bubbles animate DOWN over KIỂM ĐỊNH -->
+            <div class="eco-row eco-row--above">
+              <div class="eco-spacer-start"></div>
+              <div class="eco-zone"></div>
+              <div class="eco-zone">
+                <div class="eco-node" style="animation-delay:.05s">
+                  <div class="eco-bubble-row">
+                    <!-- ESLint -->
+                    <div class="eco-bubble">
+                      <div class="eco-bubble__icon" style="background:#4B32C3">
+                        <svg viewBox="0 0 24 24" fill="#fff"><path d="M7.257 9.132L11.816 6.5a.369.369 0 01.368 0l4.559 2.632a.369.369 0 01.184.32v5.263a.369.369 0 01-.184.319l-4.559 2.632a.369.369 0 01-.368 0l-4.559-2.632a.369.369 0 01-.184-.32V9.452a.369.369 0 01.184-.32M12 1.188L2.573 6.617A1.477 1.477 0 001.84 7.9v10.86a1.477 1.477 0 00.734 1.283L12 25.473l9.426-5.43a1.477 1.477 0 00.734-1.283V7.9a1.477 1.477 0 00-.734-1.283z"/></svg>
+                      </div>
+                      <span class="eco-bubble__name">ESLint</span>
+                    </div>
+                    <!-- Prettier -->
+                    <div class="eco-bubble">
+                      <div class="eco-bubble__icon" style="background:#F7B93E">
+                        <svg viewBox="0 0 24 24" fill="#fff"><path d="M8.571 23.429A.571.571 0 018 24H2.286a.571.571 0 110-1.143H8c.316 0 .571.256.571.572zM8 20.57H6.857a.571.571 0 100 1.143H8a.571.571 0 100-1.143zm-5.714 1.143H4.57a.571.571 0 100-1.143H2.286a.571.571 0 100 1.143zM8 18.286H2.286a.571.571 0 100 1.142H8a.571.571 0 100-1.142zM16 16H2.286a.571.571 0 100 1.143H16A.571.571 0 0016 16zm5.714-2.286H2.286a.571.571 0 100 1.143h19.428a.571.571 0 100-1.143zM8 11.43H2.286a.571.571 0 100 1.142H8a.571.571 0 100-1.143zm13.714-2.287H2.286a.571.571 0 100 1.143h19.428a.571.571 0 100-1.143zM8 6.857H2.286a.571.571 0 100 1.143H8a.571.571 0 100-1.143zm13.714-2.286H2.286a.571.571 0 100 1.143h19.428a.571.571 0 100-1.143zM8 2.286H2.286a.571.571 0 100 1.143H8a.571.571 0 100-1.143z"/></svg>
+                      </div>
+                      <span class="eco-bubble__name">Prettier</span>
+                    </div>
+                    <!-- TypeScript -->
+                    <div class="eco-bubble">
+                      <div class="eco-bubble__icon" style="background:#3178C6; border-radius:6px">
+                        <svg viewBox="0 0 24 24" fill="#fff"><path d="M0 12v12h24V0H0zm19.341-.956c.61.152 1.074.423 1.501.865.221.236.549.666.575.77.008.03-1.036.73-1.668 1.123-.023.015-.115-.084-.217-.236-.31-.45-.633-.644-1.128-.678-.728-.05-1.196.331-1.192.966a.88.88 0 00.102.45c.16.331.458.53 1.39.933 1.719.74 2.454 1.227 2.911 1.92.51.773.625 2.008.278 2.926-.38.998-1.325 1.676-2.655 1.9-.411.073-1.386.062-1.828-.018-.964-.172-1.878-.648-2.442-1.273-.221-.243-.652-.88-.625-.925.011-.016.11-.077.22-.141.108-.061.511-.294.892-.515l.69-.4.145.214c.202.308.643.731.91.872.766.404 1.817.347 2.335-.118a.883.883 0 00.313-.72c0-.278-.035-.4-.18-.61-.186-.266-.567-.49-1.649-.96-1.238-.533-1.771-.864-2.259-1.39a3.165 3.165 0 01-.659-1.2c-.091-.339-.114-1.189-.042-1.531.255-1.197 1.158-2.03 2.461-2.278.423-.08 1.406-.05 1.821.053zm-5.634 1.002l.008.983H10.59v8.876H8.38v-8.876H5.258v-.964c0-.534.011-.98.026-.99.012-.016 1.913-.024 4.217-.02l4.195.012z"/></svg>
+                      </div>
+                      <span class="eco-bubble__name">TypeScript</span>
+                    </div>
+                    <!-- Vitest -->
+                    <div class="eco-bubble">
+                      <div class="eco-bubble__icon" style="background:#6E9F18">
+                        <svg viewBox="0 0 24 24" fill="#fff"><path d="M0 0l12 21.6L24 0H13.2L12 2.4 10.8 0zm5.4 3.6H8.4l3.6 6.372 3.6-6.372h3L12 14.028z"/></svg>
+                      </div>
+                      <span class="eco-bubble__name">Vitest</span>
+                    </div>
+                    <!-- Playwright -->
+                    <div class="eco-bubble">
+                      <div class="eco-bubble__icon" style="background:#2EAD33">
+                        <i class="topic-icon" data-lucide="clapperboard" style="color:#fff"></i>
+                      </div>
+                      <span class="eco-bubble__name">Playwright</span>
+                    </div>
+                  </div>
+                  <p class="eco-label">Lint, Format &amp; Test</p>
+                  <div class="eco-connector"></div>
+                </div>
+              </div>
+              <div class="eco-zone"></div>
+              <div class="eco-spacer-end"></div>
+            </div>
+
+            <div class="pipeline-anatomy" aria-label="CI Pipeline">
+              <i class="pipeline-anatomy__spine" aria-hidden="true"></i>
+              <div class="pipeline-anatomy__col pipeline-anatomy__col--start">
+                <span class="pipeline-anatomy__icon"></span>
+                <span class="pipeline-anatomy__box pipeline-anatomy__box--ink"><i class="topic-icon" data-lucide="git-pull-request" aria-hidden="true"></i></span>
+                <p class="pipeline-anatomy__label">TRIGGER<span class="pipeline-anatomy__sub">git push / PR</span></p>
+              </div>
+              <div class="pipeline-anatomy__zone" data-zone="CHUẨN BỊ">
+                <div class="pipeline-anatomy__col"><i class="topic-icon pipeline-anatomy__icon" data-lucide="download" aria-hidden="true"></i><span class="pipeline-anatomy__dot"></span><p class="pipeline-anatomy__label">CHECKOUT<span class="pipeline-anatomy__sub">actions/checkout</span></p></div>
+                <div class="pipeline-anatomy__col"><i class="topic-icon pipeline-anatomy__icon" data-lucide="package" aria-hidden="true"></i><span class="pipeline-anatomy__dot"></span><p class="pipeline-anatomy__label">INSTALL<span class="pipeline-anatomy__sub">npm ci</span></p></div>
+              </div>
+              <div class="pipeline-anatomy__zone" data-zone="KIỂM ĐỊNH">
+                <div class="pipeline-anatomy__col"><i class="topic-icon pipeline-anatomy__icon" data-lucide="scan-text" aria-hidden="true"></i><span class="pipeline-anatomy__dot"></span><p class="pipeline-anatomy__label">LINT<span class="pipeline-anatomy__sub">eslint .</span></p></div>
+                <div class="pipeline-anatomy__col"><i class="topic-icon pipeline-anatomy__icon" data-lucide="type" aria-hidden="true"></i><span class="pipeline-anatomy__dot"></span><p class="pipeline-anatomy__label">TYPE CHECK<span class="pipeline-anatomy__sub">tsc --noEmit</span></p></div>
+                <div class="pipeline-anatomy__col"><i class="topic-icon pipeline-anatomy__icon" data-lucide="flask-conical" aria-hidden="true"></i><span class="pipeline-anatomy__dot"></span><p class="pipeline-anatomy__label">UNIT TEST<span class="pipeline-anatomy__sub">vitest run</span></p></div>
+              </div>
+              <div class="pipeline-anatomy__zone" data-zone="BUILD &amp; SECURITY">
+                <div class="pipeline-anatomy__col"><i class="topic-icon pipeline-anatomy__icon" data-lucide="box" aria-hidden="true"></i><span class="pipeline-anatomy__dot"></span><p class="pipeline-anatomy__label">BUILD<span class="pipeline-anatomy__sub">vite build</span></p></div>
+                <div class="pipeline-anatomy__col"><i class="topic-icon pipeline-anatomy__icon" data-lucide="shield-alert" aria-hidden="true"></i><span class="pipeline-anatomy__dot"></span><p class="pipeline-anatomy__label">SECURITY<span class="pipeline-anatomy__sub">gitleaks</span></p></div>
+              </div>
+              <div class="pipeline-anatomy__col">
+                <span class="pipeline-anatomy__icon"></span>
+                <span class="pipeline-anatomy__box pipeline-anatomy__box--ink"><i class="topic-icon" data-lucide="lock" aria-hidden="true"></i></span>
+                <p class="pipeline-anatomy__label">GATE<span class="pipeline-anatomy__sub">all pass → merge</span></p>
+              </div>
+            </div>
+
+            <!-- Below: CI Platform (static) + Security bubbles animate UP -->
+            <div class="eco-row eco-row--below">
+              <div class="eco-spacer-start"></div>
+              <!-- CI Platform – already visible (shown in slide 7) -->
+              <div class="eco-zone">
+                <div class="eco-node eco-node--visible">
+                  <div class="eco-connector"></div>
+                  <p class="eco-label">CI Platform</p>
+                  <div class="eco-bubble-row">
+                    <div class="eco-bubble">
+                      <div class="eco-bubble__icon" style="background:#1B1F23">
+                        <svg viewBox="0 0 24 24" fill="#fff"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+                      </div>
+                      <span class="eco-bubble__name">GitHub<br>Actions</span>
+                    </div>
+                    <div class="eco-bubble">
+                      <div class="eco-bubble__icon" style="background:#FC6D26">
+                        <svg viewBox="0 0 24 24" fill="#fff"><path d="M22.65 14.39L12 22.13 1.35 14.39a.84.84 0 01-.3-.94l1.22-3.78 2.44-7.51A.42.42 0 014.82 2a.43.43 0 01.58 0 .42.42 0 01.11.18l2.44 7.49h8.1l2.44-7.51A.42.42 0 0119.18 2a.43.43 0 01.58 0 .42.42 0 01.11.18l2.44 7.51L23.5 13.45a.84.84 0 01-.85.94z"/></svg>
+                      </div>
+                      <span class="eco-bubble__name">GitLab CI</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="eco-zone"></div>
+              <!-- Security – animates in -->
+              <div class="eco-zone">
+                <div class="eco-node" style="animation-delay:.1s">
+                  <div class="eco-connector"></div>
+                  <p class="eco-label">Security</p>
+                  <div class="eco-bubble-row">
+                    <!-- Docker -->
+                    <div class="eco-bubble">
+                      <div class="eco-bubble__icon" style="background:#2496ED">
+                        <svg viewBox="0 0 24 24" fill="#fff"><path d="M13.983 11.078h2.119a.186.186 0 00.186-.185V9.006a.186.186 0 00-.186-.186h-2.119a.185.185 0 00-.185.185v1.888c0 .102.083.185.185.185m-2.954-5.43h2.118a.186.186 0 00.186-.186V3.574a.186.186 0 00-.186-.185h-2.118a.185.185 0 00-.185.185v1.888c0 .103.082.185.185.185m0 2.716h2.118a.187.187 0 00.186-.186V6.29a.186.186 0 00-.186-.185h-2.118a.185.185 0 00-.185.185v1.887c0 .102.082.185.185.186m-2.93 0h2.12a.186.186 0 00.184-.186V6.29a.185.185 0 00-.185-.185H8.1a.185.185 0 00-.185.185v1.887c0 .102.083.185.185.186m-2.964 0h2.119a.186.186 0 00.185-.186V6.29a.185.185 0 00-.185-.185H5.136a.186.186 0 00-.186.185v1.887c0 .102.084.185.186.186m5.893 2.715h2.118a.186.186 0 00.186-.185V9.006a.186.186 0 00-.186-.186h-2.118a.185.185 0 00-.185.185v1.888c0 .102.082.185.185.185m2.93 0h2.12a.185.185 0 00.184-.185V9.006a.185.185 0 00-.184-.186h-2.12a.185.185 0 00-.184.185v1.888c0 .102.083.185.185.185M23.763 9.89c-.065-.051-.672-.51-1.954-.51-.338.001-.676.03-1.01.087-.248-1.7-1.653-2.53-1.716-2.566l-.344-.199-.226.327c-.284.438-.49.922-.612 1.43-.23.97-.09 1.882.403 2.661-.595.332-1.55.413-1.744.42H.751a.751.751 0 00-.75.748 11.376 11.376 0 00.692 4.062c.545 1.428 1.355 2.48 2.41 3.124 1.18.723 3.1 1.137 5.275 1.137.983.003 1.963-.086 2.93-.266a12.248 12.248 0 003.823-1.389c.98-.567 1.86-1.288 2.61-2.136 1.252-1.418 1.998-2.997 2.553-4.4h.221c1.372 0 2.215-.549 2.68-1.009.309-.293.55-.65.707-1.046l.098-.288z"/></svg>
+                      </div>
+                      <span class="eco-bubble__name">Docker<br>Scout</span>
+                    </div>
+                    <!-- Dependabot -->
+                    <div class="eco-bubble">
+                      <div class="eco-bubble__icon" style="background:#025E8C">
+                        <i class="topic-icon" data-lucide="bot" style="color:#fff"></i>
+                      </div>
+                      <span class="eco-bubble__name">Dependabot</span>
+                    </div>
+                    <!-- Gitleaks -->
+                    <div class="eco-bubble">
+                      <div class="eco-bubble__icon" style="background:#EB4343">
+                        <i class="topic-icon" data-lucide="key-round" style="color:#fff"></i>
+                      </div>
+                      <span class="eco-bubble__name">Gitleaks</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="eco-spacer-end"></div>
+            </div>
+          </div>
+          <footer class="slide-footer"><span>TOOL CHỈ PHÁT HUY TÁC DỤNG KHI ĐƯỢC GHI RÕ TRONG PIPELINE, KHÔNG PHẢI CHẠY THỦ CÔNG</span><span>08 / 24</span></footer>
+        </section>
+
+
+        <!-- SLIDE 9: Manual Deploy -->
+        <section class="slide" data-slide>
+          <header class="slide__header">
+            <div><p class="eyebrow">09 / Trước khi có CD</p><h2>Deploy thủ công & Những câu hỏi không lời đáp</h2></div>
+            <div class="brand-lockup"><img src="assets/kaopiz-logo.svg" alt="Kaopiz"></div>
+          </header>
+          <div class="two-col two-col--45-55 two-col--stretch">
+            <figure class="code-block code-block--term code-block--full">
+              <figcaption class="code-block__chrome">
+                <span class="code-block__dots">
+                  <span class="code-block__dot code-block__dot--red"></span>
+                  <span class="code-block__dot code-block__dot--yellow"></span>
+                  <span class="code-block__dot code-block__dot--green"></span>
+                  <span class="code-block__file">deploy-manual.sh</span>
+                </span>
+                <span class="code-block__lang">SSH SESSION</span>
+              </figcaption>
+              <pre class="code-block__body"><code><span class="code-block__line"><span class="code-block__prompt">$</span> ssh ubuntu@172.31.18.42</span>
+<span class="code-block__line"><span class="code-block__prompt">$</span> git pull origin main</span>
+<span class="code-block__line"><span class="code-block__prompt">$</span> npm install && npm run build</span>
+<span class="code-block__line is-fail"><span class="code-block__prompt">$</span> docker stop web-app-old  <span class="code-block__tag-danger"># Downtime start</span></span>
+<span class="code-block__line"><span class="code-block__prompt">$</span> docker run -d -p 80:3000 web-app:latest</span>
+<span class="code-block__line"><span class="code-block__prompt">$</span> # Mở trình duyệt, F5, tự kiểm tra thủ công</span></code></pre>
+            </figure>
+
+            <div class="risk-grid">
+              <article class="risk-card">
+                <div class="risk-card__header">
+                  <div class="risk-card__icon"><i class="topic-icon" data-lucide="user-x" aria-hidden="true"></i></div>
+                  <span class="risk-card__badge">Thiếu Audit Log</span>
+                </div>
+                <h3>Ai deploy? Khi nào?</h3>
+                <p>Không có vết audit. Sự cố xảy ra không biết ai SSH vào server hay chạy lệnh lúc nào.</p>
+              </article>
+
+              <article class="risk-card">
+                <div class="risk-card__header">
+                  <div class="risk-card__icon"><i class="topic-icon" data-lucide="help-circle" aria-hidden="true"></i></div>
+                  <span class="risk-card__badge">Tag :latest</span>
+                </div>
+                <h3>Server đang chạy Version nào?</h3>
+                <p>Ghi đè tag <code>:latest</code> liên tục làm mất vết commit SHA — Mù tịt phiên bản chạy thực tế.</p>
+              </article>
+
+              <article class="risk-card">
+                <div class="risk-card__header">
+                  <div class="risk-card__icon"><i class="topic-icon" data-lucide="shield-alert" aria-hidden="true"></i></div>
+                  <span class="risk-card__badge">Thiếu Kiểm Định</span>
+                </div>
+                <h3>Code đã test kỹ chưa?</h3>
+                <p>Bỏ qua runner độc lập. Dev tự tin "local pass 100%" là đưa thẳng lên Server sản phẩm.</p>
+              </article>
+
+              <article class="risk-card">
+                <div class="risk-card__header">
+                  <div class="risk-card__icon"><i class="topic-icon" data-lucide="rotate-ccw" aria-hidden="true"></i></div>
+                  <span class="risk-card__badge">Không Rollback</span>
+                </div>
+                <h3>Fail giữa chừng = Sập!</h3>
+                <p><code>docker stop</code> ngắt dịch vụ trước. Build fail giữa chừng gây downtime và không lùi lại được.</p>
+              </article>
+
+              <div class="risk-alert-banner">
+                <i class="topic-icon" data-lucide="alert-triangle" aria-hidden="true"></i>
+                <span><strong>RỦI RO TỔ CHỨC:</strong> Deploy thủ công phụ thuộc 100% vào cẩn thận cá nhân & trí nhớ — Không thể scale!</span>
+              </div>
+            </div>
+          </div>
+          <footer class="slide-footer"><span>DEPLOY THỦ CÔNG KHÔNG SAI KỸ THUẬT — NÓ SAI VÌ KHÔNG THỂ LẶP LẠI VÀ KIỂM SOÁT</span><span>09 / 24</span></footer>
+        </section>
+
+        <!-- SLIDE 10: CD Definition & CD Pipeline Flow -->
+        <section class="slide" data-slide>
+          <header class="slide__header">
+            <div><p class="eyebrow">10 / Bản chất CD</p><h2>Continuous Delivery / Deployment là gì?</h2></div>
+            <div class="brand-lockup"><img src="assets/kaopiz-logo.svg" alt="Kaopiz"></div>
+          </header>
+
+          <!-- Top: CD Core Concept Cards -->
+          <div class="two-col two-col--50-50" style="margin-bottom: 28px; gap: 24px;">
+            <article style="padding: 22px 26px; background: #fff; border-radius: var(--radius); box-shadow: 0 4px 18px rgba(11,27,43,0.05);">
+              <span class="eyebrow" style="color: var(--accent); margin-bottom: 6px;">01 / Bản chất CD</span>
+              <h3 style="font-size: 21px; color: var(--ink); margin: 4px 0 8px;">Đưa đúng Artifact đã test ra Server</h3>
+              <p style="font-size: 16px; color: #52636f; margin: 0; line-height: 1.5;">CD không biên dịch hay build lại code trên server. CD tiếp nhận đúng Docker Image kèm tag Git Commit SHA đã được CI xác minh để triển khai.</p>
+            </article>
+
+            <article style="padding: 22px 26px; background: #fff; border-radius: var(--radius); box-shadow: 0 4px 18px rgba(11,27,43,0.05);">
+              <span class="eyebrow" style="color: var(--ink); margin-bottom: 6px;">02 / Nhiệm vụ CD</span>
+              <h3 style="font-size: 21px; color: var(--ink); margin: 4px 0 8px;">Tự động hóa chuỗi thao tác Release</h3>
+              <p style="font-size: 16px; color: #52636f; margin: 0; line-height: 1.5;">Thay thế thao tác SSH &amp; gõ lệnh thủ công bằng quy trình tự động: Tải Artifact → Cấu hình → Khởi chạy Container → Kiểm tra Health Check.</p>
+            </article>
+          </div>
+
+          <!-- Bottom: CD Pipeline Anatomy (Purely CD steps!) -->
+          <div class="pipeline-anatomy" aria-label="Quy trình CD Pipeline">
+            <i class="pipeline-anatomy__spine" aria-hidden="true"></i>
+
+            <!-- START: ARTIFACT VERIFIED -->
+            <div class="pipeline-anatomy__col pipeline-anatomy__col--start">
+              <span class="pipeline-anatomy__icon"></span>
+              <span class="pipeline-anatomy__box pipeline-anatomy__box--ink">
+                <i class="topic-icon" data-lucide="package" aria-hidden="true"></i>
+              </span>
+              <p class="pipeline-anatomy__label">ARTIFACT<span class="pipeline-anatomy__sub">tag: git sha</span></p>
+            </div>
+
+            <!-- Zone: CD PIPELINE -->
+            <div class="pipeline-anatomy__zone" data-zone="QUY TRÌNH CD (AUTOMATED RELEASE)">
+              <div class="pipeline-anatomy__col">
+                <i class="topic-icon pipeline-anatomy__icon" data-lucide="download-cloud" aria-hidden="true"></i>
+                <span class="pipeline-anatomy__dot"></span>
+                <p class="pipeline-anatomy__label">FETCH ARTIFACT<span class="pipeline-anatomy__sub">pull image:sha</span></p>
+              </div>
+              <div class="pipeline-anatomy__col">
+                <i class="topic-icon pipeline-anatomy__icon" data-lucide="settings" aria-hidden="true"></i>
+                <span class="pipeline-anatomy__dot"></span>
+                <p class="pipeline-anatomy__label">ENV CONFIG<span class="pipeline-anatomy__sub">load secrets</span></p>
+              </div>
+              <div class="pipeline-anatomy__col">
+                <i class="topic-icon pipeline-anatomy__icon" data-lucide="server" aria-hidden="true"></i>
+                <span class="pipeline-anatomy__dot"></span>
+                <p class="pipeline-anatomy__label">DEPLOY SERVER<span class="pipeline-anatomy__sub">docker run</span></p>
+              </div>
+              <div class="pipeline-anatomy__col">
+                <i class="topic-icon pipeline-anatomy__icon" data-lucide="activity" aria-hidden="true"></i>
+                <span class="pipeline-anatomy__dot"></span>
+                <p class="pipeline-anatomy__label">HEALTH CHECK<span class="pipeline-anatomy__sub">curl /health</span></p>
+              </div>
+            </div>
+
+            <!-- END: LIVE PRODUCTION -->
+            <div class="pipeline-anatomy__col">
+              <span class="pipeline-anatomy__icon"></span>
+              <span class="pipeline-anatomy__box pipeline-anatomy__box--ink">
+                <i class="topic-icon" data-lucide="rocket" aria-hidden="true"></i>
+              </span>
+              <p class="pipeline-anatomy__label">PRODUCTION<span class="pipeline-anatomy__sub">200 OK Live</span></p>
+            </div>
+          </div>
+
+          <footer class="slide-footer"><span>THỨ ĐƯỢC TEST CHÍNH XÁC LÀ THỨ ĐƯỢC DEPLOY</span><span>10 / 24</span></footer>
+        </section>
+
+
+
+        <!-- SLIDE 11: Delivery vs Deployment (Stacked 2-Pipeline Comparison) -->
+        <section class="slide" data-slide>
+          <header class="slide__header">
+            <div><p class="eyebrow">11 / Phân loại CD</p><h2>Continuous Delivery vs Continuous Deployment</h2></div>
+            <div class="brand-lockup"><img src="assets/kaopiz-logo.svg" alt="Kaopiz"></div>
+          </header>
+
+          <div style="display: flex; flex-direction: column; gap: 24px;">
+            
+            <!-- PIPELINE 1: CONTINUOUS DELIVERY -->
+            <div style="background: #fff; padding: 20px 24px; border-radius: var(--radius); box-shadow: 0 4px 18px rgba(11,27,43,0.05);">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <span class="eyebrow" style="color: #1F74A7; font-size: 14px;">01 / CONTINUOUS DELIVERY (MANUAL RELEASE)</span>
+                <span style="font-size: 13px; font-weight: 600; background: #E3F2FD; color: #1565C0; padding: 3px 10px; border-radius: 12px; font-family: var(--font-mono);">BẢN BUILD SẴN SÀNG — CẦN NÚT BẤM CỦA CON NGƯỜI</span>
+              </div>
+
+              <div class="pipeline-anatomy" style="min-height: 0; padding-top: 10px; padding-bottom: 10px;" aria-label="Continuous Delivery Pipeline">
+                <i class="pipeline-anatomy__spine" aria-hidden="true"></i>
+
+                <div class="pipeline-anatomy__col pipeline-anatomy__col--start">
+                  <span class="pipeline-anatomy__icon"></span>
+                  <span class="pipeline-anatomy__box pipeline-anatomy__box--ink">
+                    <i class="topic-icon" data-lucide="git-pull-request" aria-hidden="true"></i>
+                  </span>
+                  <p class="pipeline-anatomy__label">MERGE CODE<span class="pipeline-anatomy__sub">main branch</span></p>
+                </div>
+
+                <div class="pipeline-anatomy__zone" data-zone="CI &amp; STAGING (TỰ ĐỘNG)">
+                  <div class="pipeline-anatomy__col">
+                    <i class="topic-icon pipeline-anatomy__icon" data-lucide="flask-conical" aria-hidden="true"></i>
+                    <span class="pipeline-anatomy__dot"></span>
+                    <p class="pipeline-anatomy__label">AUTO TEST<span class="pipeline-anatomy__sub">unit + lint</span></p>
+                  </div>
+                  <div class="pipeline-anatomy__col">
+                    <i class="topic-icon pipeline-anatomy__icon" data-lucide="package" aria-hidden="true"></i>
+                    <span class="pipeline-anatomy__dot"></span>
+                    <p class="pipeline-anatomy__label">BUILD IMAGE<span class="pipeline-anatomy__sub">tag: sha</span></p>
+                  </div>
+                  <div class="pipeline-anatomy__col">
+                    <i class="topic-icon pipeline-anatomy__icon" data-lucide="server" aria-hidden="true"></i>
+                    <span class="pipeline-anatomy__dot"></span>
+                    <p class="pipeline-anatomy__label">STAGING<span class="pipeline-anatomy__sub">auto deploy</span></p>
+                  </div>
+                </div>
+
+                <!-- GATE: MANUAL APPROVAL BUTTON -->
+                <div class="pipeline-anatomy__col">
+                  <span class="pipeline-anatomy__icon"></span>
+                  <span class="pipeline-anatomy__box" style="background: #1F74A7; color: #fff; border-color: #1F74A7; box-shadow: 0 0 0 4px rgba(31,116,167,0.2);">
+                    <i class="topic-icon" data-lucide="user-check" aria-hidden="true"></i>
+                  </span>
+                  <p class="pipeline-anatomy__label" style="color: #1F74A7; font-weight: 700;">MANUAL APPROVAL<span class="pipeline-anatomy__sub" style="color: #1F74A7;">Bấm nút Release</span></p>
+                </div>
+
+                <div class="pipeline-anatomy__col">
+                  <span class="pipeline-anatomy__icon"></span>
+                  <span class="pipeline-anatomy__box pipeline-anatomy__box--ink">
+                    <i class="topic-icon" data-lucide="rocket" aria-hidden="true"></i>
+                  </span>
+                  <p class="pipeline-anatomy__label">PRODUCTION<span class="pipeline-anatomy__sub">Live to users</span></p>
+                </div>
+              </div>
+            </div>
+
+            <!-- PIPELINE 2: CONTINUOUS DEPLOYMENT -->
+            <div style="background: #fff; padding: 20px 24px; border-radius: var(--radius); box-shadow: 0 4px 18px rgba(11,27,43,0.05);">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <span class="eyebrow" style="color: var(--accent); font-size: 14px;">02 / CONTINUOUS DEPLOYMENT (AUTOMATED RELEASE)</span>
+                <span style="font-size: 13px; font-weight: 600; background: #FFF3E0; color: #E65100; padding: 3px 10px; border-radius: 12px; font-family: var(--font-mono);">100% TỰ ĐỘNG ĐẨY RA PROD NGAY KHI CI PASS</span>
+              </div>
+
+              <div class="pipeline-anatomy" style="min-height: 0; padding-top: 10px; padding-bottom: 10px;" aria-label="Continuous Deployment Pipeline">
+                <i class="pipeline-anatomy__spine" aria-hidden="true"></i>
+
+                <div class="pipeline-anatomy__col pipeline-anatomy__col--start">
+                  <span class="pipeline-anatomy__icon"></span>
+                  <span class="pipeline-anatomy__box pipeline-anatomy__box--ink">
+                    <i class="topic-icon" data-lucide="git-pull-request" aria-hidden="true"></i>
+                  </span>
+                  <p class="pipeline-anatomy__label">MERGE CODE<span class="pipeline-anatomy__sub">main branch</span></p>
+                </div>
+
+                <div class="pipeline-anatomy__zone" data-zone="FULL AUTOMATED GATE (E2E TEST + FEATURE FLAGS)">
+                  <div class="pipeline-anatomy__col">
+                    <i class="topic-icon pipeline-anatomy__icon" data-lucide="shield-check" aria-hidden="true"></i>
+                    <span class="pipeline-anatomy__dot"></span>
+                    <p class="pipeline-anatomy__label">SUITE E2E TEST<span class="pipeline-anatomy__sub">coverage &gt; 90%</span></p>
+                  </div>
+                  <div class="pipeline-anatomy__col">
+                    <i class="topic-icon pipeline-anatomy__icon" data-lucide="package" aria-hidden="true"></i>
+                    <span class="pipeline-anatomy__dot"></span>
+                    <p class="pipeline-anatomy__label">BUILD IMAGE<span class="pipeline-anatomy__sub">tag: sha</span></p>
+                  </div>
+                  <div class="pipeline-anatomy__col">
+                    <i class="topic-icon pipeline-anatomy__icon" data-lucide="zap" aria-hidden="true"></i>
+                    <span class="pipeline-anatomy__dot"></span>
+                    <p class="pipeline-anatomy__label">AUTO DEPLOY<span class="pipeline-anatomy__sub">zero-downtime</span></p>
+                  </div>
+                </div>
+
+                <div class="pipeline-anatomy__col">
+                  <span class="pipeline-anatomy__icon"></span>
+                  <span class="pipeline-anatomy__box" style="background: var(--accent); color: #fff; border-color: var(--accent); box-shadow: 0 0 0 4px rgba(235,67,67,0.2);">
+                    <i class="topic-icon" data-lucide="activity" aria-hidden="true"></i>
+                  </span>
+                  <p class="pipeline-anatomy__label" style="color: var(--accent); font-weight: 700;">HEALTH CHECK<span class="pipeline-anatomy__sub" style="color: var(--accent);">Auto Rollback</span></p>
+                </div>
+
+                <div class="pipeline-anatomy__col">
+                  <span class="pipeline-anatomy__icon"></span>
+                  <span class="pipeline-anatomy__box pipeline-anatomy__box--ink">
+                    <i class="topic-icon" data-lucide="rocket" aria-hidden="true"></i>
+                  </span>
+                  <p class="pipeline-anatomy__label">PRODUCTION<span class="pipeline-anatomy__sub">Live 100% Auto</span></p>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <footer class="slide-footer"><span>KHÁC BIỆT DUY NHẤT LÀ CÓ CON NGƯỜI BẤM NÚT RELEASE HAY KHÔNG</span><span>11 / 24</span></footer>
+        </section>
+
+        <!-- SLIDE 12: Hybrid Git Model -->
+        <section class="slide" data-slide>
+          <header class="slide__header">
+            <div><p class="eyebrow">12 / Mô hình lai</p><h2>Quy tắc phân nhánh Git & Triển khai</h2></div>
+            <div class="brand-lockup"><img src="assets/kaopiz-logo.svg" alt="Kaopiz"></div>
+          </header>
+          <div class="two-col two-col--40-60">
+            <div class="panel">
+              <p class="eyebrow" style="margin-bottom:12px;">Mô hình lai doanh nghiệp</p>
+              <h3>Phân nhánh chuẩn:</h3>
+              <p style="margin-top:12px;"><strong>develop branch</strong> → Auto Deploy lên Staging (Deployment)</p>
+              <p style="margin-top:12px;"><strong>main branch</strong> → Chờ người duyệt lên Production (Delivery)</p>
+            </div>
+            <div class="pipeline-parallel" aria-label="Branching strategies">
+              <article class="pipeline-parallel__step"><span>01</span><h3>CI Pipeline</h3><p>Merge & Verify</p></article>
+              <div class="pipeline-parallel__fan" data-label="Environments">
+                <article><h3>develop</h3><p>Auto → Staging</p></article>
+                <article><h3>main</h3><p>Manual → Production</p></article>
+              </div>
+            </div>
+          </div>
+          <footer class="slide-footer"><span>CONTINUOUS DEPLOYMENT CHO STAGING — CONTINUOUS DELIVERY CHO PRODUCTION</span><span>12 / 24</span></footer>
+        </section>
+
+        <!-- SLIDE 13: 4 Demo Overview Pipeline -->
+        <section class="slide" data-slide>
+          <header class="slide__header">
+            <div><p class="eyebrow">13 / Thực hành</p><h2>Lộ trình 4 bài Demo thực tế</h2></div>
+            <div class="brand-lockup"><img src="assets/kaopiz-logo.svg" alt="Kaopiz"></div>
+          </header>
+          <div class="pipeline" aria-label="Lộ trình demo">
+            <article class="pipeline__step"><span>01</span><i class="topic-icon" data-lucide="bot" aria-hidden="true"></i><h3>AI viết CI</h3><p>Prompt & Checklist review ci.yml</p></article>
+            <i class="pipeline__arrow" aria-hidden="true"></i>
+            <article class="pipeline__step"><span>02</span><i class="topic-icon" data-lucide="package" aria-hidden="true"></i><h3>AI viết CD</h3><p>Docker Hub & Tag commit SHA</p></article>
+            <i class="pipeline__arrow" aria-hidden="true"></i>
+            <article class="pipeline__step"><span>03</span><i class="topic-icon" data-lucide="zap" aria-hidden="true"></i><h3>Full Flow</h3><p>git push → Live Production</p></article>
+            <i class="pipeline__arrow" aria-hidden="true"></i>
+            <article class="pipeline__step" style="border:2px solid var(--accent);"><span>04</span><i class="topic-icon" data-lucide="alert-triangle" aria-hidden="true"></i><h3>Tái hiện Lỗi ★</h3><p>Local pass, CI fail & AI loop</p></article>
+          </div>
+          <footer class="slide-footer"><span>SẴN SÀNG CHUYỂN SANG MÀN HÌNH DEMO LIVE TRÊN REPOSITORY THỰC TẾ</span><span>13 / 24</span></footer>
+        </section>
+
+        <!-- SLIDE 14: Demo 1 AI CI -->
+        <section class="slide" data-slide>
+          <header class="slide__header">
+            <div><p class="eyebrow">14 / Demo 01</p><h2>AI viết CI & Checklist Review</h2></div>
+            <div class="brand-lockup"><img src="assets/kaopiz-logo.svg" alt="Kaopiz"></div>
+          </header>
+          <div class="two-col two-col--50-50">
+            <figure class="code-block">
+              <figcaption class="code-block__chrome"><span class="code-block__file">ci.yml</span><span class="code-block__lang">YAML</span></figcaption>
+              <pre class="code-block__body"><code><span class="code-block__line">name: ci</span>
+<span class="code-block__line">on: [push, pull_request]</span>
+<span class="code-block__line">jobs:</span>
+<span class="code-block__line">  verify:</span>
+<span class="code-block__line">    runs-on: ubuntu-latest</span>
+<span class="code-block__line">    steps:</span>
+<span class="code-block__line">      - uses: actions/checkout@v4</span>
+<span class="code-block__line">      - run: npm ci</span>
+<span class="code-block__line">      - run: npm test</span></code></pre>
+            </figure>
+            <div class="panel">
+              <p class="eyebrow" style="margin-bottom:12px;">Checklist Review</p>
+              <h3>Checklist soi lại workflow AI viết:</h3>
+              <ul>
+                <li>Có cache dependency chưa? (npm cache)</li>
+                <li>Node version có khớp với Production?</li>
+                <li>Có npm ci thay vì npm install chưa?</li>
+                <li>Có bước secret & security scan chưa?</li>
+              </ul>
+              <blockquote class="quote" style="font-size:24px; margin-top:20px;">AI viết được ≠ AI viết đúng!</blockquote>
+            </div>
+          </div>
+          <footer class="slide-footer"><span>LUÔN REVIEW VÀ BỔ SUNG CHECKLIST CHO WORKFLOW DO AI SINH RA</span><span>14 / 24</span></footer>
+        </section>
+
+        <!-- SLIDE 15: Demo 2 CD Flow Tag SHA -->
+        <section class="slide" data-slide>
+          <header class="slide__header">
+            <div><p class="eyebrow">15 / Demo 02</p><h2>CD Flow & Tag Image Docker SHA</h2></div>
+            <div class="brand-lockup"><img src="assets/kaopiz-logo.svg" alt="Kaopiz"></div>
+          </header>
+          <div class="two-col two-col--40-60">
+            <figure class="code-block">
+              <figcaption class="code-block__chrome"><span class="code-block__file">cd.yml</span><span class="code-block__lang">YAML</span></figcaption>
+              <pre class="code-block__body"><code><span class="code-block__line">- name: Build & Push</span>
+<span class="code-block__line">  uses: docker/build-push-action@v5</span>
+<span class="code-block__line">  with:</span>
+<span class="code-block__line is-highlight">    tags: app:${{ github.sha }}</span></code></pre>
+            </figure>
+            <div class="comparison">
+              <article>
+                <p class="eyebrow">Anti-pattern</p>
+                <h3>Tag :latest</h3>
+                <p class="deck">Ghi đè image cũ → KHÔNG THỂ ROLLBACK!</p>
+              </article>
+              <article class="is-recommended">
+                <p class="eyebrow">Best practice</p>
+                <h3>Tag ${{ github.sha }}</h3>
+                <p class="deck">Lưu vết theo commit → ROLLBACK DỄ DÀNG!</p>
+              </article>
+            </div>
+          </div>
+          <footer class="slide-footer"><span>TAG IMAGE BẰNG COMMIT SHA LÀ ĐIỀU KIỆN TIÊN QUYẾT ĐỂ ROLLBACK DỄ DÀNG</span><span>15 / 24</span></footer>
+        </section>
+
+        <!-- SLIDE 16: Demo 3 Diff & Terminal -->
+        <section class="slide" data-slide>
+          <header class="slide__header">
+            <div><p class="eyebrow">16 / Demo 03</p><h2>Full Automation: git push → Production</h2></div>
+            <div class="brand-lockup"><img src="assets/kaopiz-logo.svg" alt="Kaopiz"></div>
+          </header>
+          <div class="two-col two-col--60-40">
+            <figure class="code-block code-block--diff">
+              <figcaption class="code-block__chrome"><span class="code-block__file">public/index.html</span><span class="code-block__lang">git diff</span></figcaption>
+              <pre class="code-block__body"><code><span class="code-block__line is-del">- &lt;h1&gt;Hello World&lt;/h1&gt;</span>
+<span class="code-block__line is-add">+ &lt;h1&gt;Hello from AI-powered CI/CD&lt;/h1&gt;</span></code></pre>
+            </figure>
+            <figure class="code-block code-block--term">
+              <figcaption class="code-block__chrome"><span class="code-block__file">terminal</span><span class="code-block__lang">bash</span></figcaption>
+              <pre class="code-block__body"><code><span class="code-block__line"><span class="code-block__prompt">$</span> git commit -m "update landing"</span>
+<span class="code-block__line"><span class="code-block__prompt">$</span> git push origin main</span>
+<span class="code-block__line is-ok">✓ CI Pipeline Pass</span>
+<span class="code-block__line is-ok">✓ Docker Image Pushed</span>
+<span class="code-block__line is-ok">✓ EC2 Container Restarted</span>
+<span class="code-block__line is-ok">✓ Health Check 200 OK</span></code></pre>
+            </figure>
+          </div>
+          <footer class="slide-footer"><span>KHÔNG SSH THỦ CÔNG — KHÔNG NHỚ LỆNH BẰNG TRÍ NHỚ — KHÔNG CẦN NGỒI CHỜ</span><span>16 / 24</span></footer>
+        </section>
+
+        <!-- SLIDE 17: Demo 4 Converge Gate -->
+        <section class="slide" data-slide>
+          <header class="slide__header">
+            <div><p class="eyebrow">17 / Demo 04 ★</p><h2>Tái hiện Lỗi & Vòng lặp AI - Dev Review</h2></div>
+            <div class="brand-lockup"><img src="assets/kaopiz-logo.svg" alt="Kaopiz"></div>
+          </header>
+          <div class="pipeline-converge" aria-label="AI and Dev Loop">
+            <div class="pipeline-converge__actors">
+              <article><i class="topic-icon" data-lucide="terminal" aria-hidden="true"></i><h3>Local Pass</h3><p>File config ẩn có sẵn trên máy dev</p></article>
+              <article><i class="topic-icon" data-lucide="x-circle" aria-hidden="true"></i><h3>CI FAILED</h3><p>CI checkout thiếu file .env local</p></article>
+            </div>
+            <p class="pipeline-converge__bypass">đưa log cho AI phân tích</p>
+            <div class="pipeline-converge__gate"><span>CỔNG BẮT BỘC</span><code>DEVELOPER REVIEW</code></div>
+            <p class="pipeline-converge__out">Apply Fix → CI Pass 100%</p>
+          </div>
+          <footer class="slide-footer"><span>CỔNG QUYẾT ĐỊNH CUỐI CÙNG LÀ CI PIPELINE — KHÔNG PHẢI KHẲNG ĐỊNH CỦA AI</span><span>17 / 24</span></footer>
+        </section>
+
+        <!-- SLIDE 18: Section 7 — Deploy Issues in CI/CD -->
+        <section class="slide" data-slide>
+          <header class="slide__header">
+            <div><p class="eyebrow">18 / Phần 7</p><h2>Các issues có thể phát sinh khi Deploy</h2></div>
+            <div class="brand-lockup"><img src="assets/kaopiz-logo.svg" alt="Kaopiz"></div>
+          </header>
+          <p class="deck" style="margin-bottom: 8px;">Đã có CI/CD vẫn có thể deploy lỗi — nếu pipeline cấu hình chưa chặt. Đây là các điểm trượt thường gặp <strong>trong quá trình CI/CD</strong>, trước khi code chạm Production.</p>
+          <div class="three-col" style="gap: 20px; align-self: center; width: 100%;">
+            <article>
+              <span class="step">01</span>
+              <h3>Môi trường CI ≠ Local</h3>
+              <p>Runner/container khác OS, runtime, dependency và config với máy dev — local xanh, pipeline đỏ (hoặc ngược lại).</p>
+            </article>
+            <article>
+              <span class="step">02</span>
+              <h3>Test sai phạm vi / code ẩn</h3>
+              <p>Chỉ test file vừa sửa, code chưa commit, checkout sai ref — pipeline pass nhưng không phải bản sẽ deploy.</p>
+            </article>
+            <article>
+              <span class="step">03</span>
+              <h3>Pipeline lỗi nhưng vẫn deploy</h3>
+              <p><code>continue-on-error</code>, thiếu <code>needs</code>, bypass branch protection — job deploy chạy dù CI fail.</p>
+            </article>
+          </div>
+          <div class="panel" style="margin-top: 20px; align-self: center; width: 100%; max-width: 920px;">
+            <p class="eyebrow" style="margin-bottom: 10px;">Issue 04 — Giai đoạn CD</p>
+            <p style="font-size: 22px; line-height: 1.5; margin: 0;">Deploy image tag <code>:latest</code> — không biết đang chạy commit nào, ghi đè version, rollback khó hoặc không thể.</p>
+          </div>
+          <footer class="slide-footer"><span>PHẦN 7: ISSUES TRONG CI/CD — KHÔNG PHẢI “CHƯA CÓ PIPELINE”</span><span>18 / 24</span></footer>
+        </section>
+
+        <!-- SLIDE 19: Issue 01 — Environment mismatch -->
+        <section class="slide" data-slide>
+          <header class="slide__header">
+            <div><p class="eyebrow">19 / Phần 7 · Issue 01</p><h2>Môi trường CI khác máy Local</h2></div>
+            <div class="brand-lockup"><img src="assets/kaopiz-logo.svg" alt="Kaopiz"></div>
+          </header>
+
+          <div style="display: flex; flex-direction: column; gap: 24px; justify-content: flex-start; height: 100%;">
+            <div class="risk-alert-banner" style="font-size: 18px; padding: 18px 24px;">
+              <i class="topic-icon" data-lucide="alert-triangle" aria-hidden="true"></i>
+              <span><strong>ISSUE TRONG PIPELINE:</strong> Cùng repo, cùng lệnh — nhưng Runner dùng container sạch, runtime ghim khác, không có <code>.env.local</code> hay <code>node_modules</code> cache của máy dev.</span>
+            </div>
+
+            <div class="two-col two-col--50-50" style="gap: 24px; align-items: stretch;">
+              <div style="background: #fff; padding: 28px 30px; border-radius: var(--radius); box-shadow: 0 4px 18px rgba(11,27,43,0.05); display: flex; flex-direction: column; justify-content: space-between;">
+                <div>
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                    <span class="eyebrow" style="color: #B78103; font-size: 16px;">MÁY DEVELOPER (LOCAL)</span>
+                    <span style="font-size: 13px; font-weight: 700; background: #FFF8E1; color: #B78103; padding: 4px 12px; border-radius: 12px; font-family: var(--font-mono);">PASS</span>
+                  </div>
+                  <div style="display: flex; flex-direction: column; gap: 14px; font-size: 17px; color: #405261;">
+                    <div style="background: #F8FAF9; padding: 12px 16px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+                      <span><strong>Node Runtime:</strong> v20.11 (mới nhất)</span>
+                      <code style="background: #FFF3E0; color: #E65100; padding: 2px 8px; border-radius: 4px; font-size: 14px;">Khác prod</code>
+                    </div>
+                    <div style="background: #F8FAF9; padding: 12px 16px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+                      <span><strong>Environment:</strong> <code>.env.local</code> ẩn</span>
+                      <code style="background: #FFF3E0; color: #E65100; padding: 2px 8px; border-radius: 4px; font-size: 14px;">Secret có sẵn</code>
+                    </div>
+                    <div style="background: #F8FAF9; padding: 12px 16px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+                      <span><strong>Packages:</strong> <code>node_modules</code> cũ</span>
+                      <code style="background: #FFF3E0; color: #E65100; padding: 2px 8px; border-radius: 4px; font-size: 14px;">Cache lệch lockfile</code>
+                    </div>
+                  </div>
+                </div>
+                <p style="margin-top: 18px; font-size: 15px; color: #78909C; font-family: var(--font-mono); font-style: italic;">➔ "Máy tôi chạy bình thường mà!"</p>
+              </div>
+
+              <div style="background: #fff; padding: 28px 30px; border-radius: var(--radius); box-shadow: 0 4px 18px rgba(11,27,43,0.05); display: flex; flex-direction: column; justify-content: space-between;">
+                <div>
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                    <span class="eyebrow" style="color: var(--accent); font-size: 16px;">CI RUNNER (CONTAINER SẠCH)</span>
+                    <span style="font-size: 13px; font-weight: 700; background: #FDE8E8; color: #D32F2F; padding: 4px 12px; border-radius: 12px; font-family: var(--font-mono);">FAIL</span>
+                  </div>
+                  <div style="display: flex; flex-direction: column; gap: 14px; font-size: 17px; color: #405261;">
+                    <div style="background: #FFEBEE; padding: 12px 16px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+                      <span><strong>Node Runtime:</strong> Ghim v18.17 LTS</span>
+                      <code style="background: #D32F2F; color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 14px;">SyntaxError</code>
+                    </div>
+                    <div style="background: #FFEBEE; padding: 12px 16px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+                      <span><strong>Environment:</strong> No <code>.env.local</code></span>
+                      <code style="background: #D32F2F; color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 14px;">Thiếu config</code>
+                    </div>
+                    <div style="background: #FFEBEE; padding: 12px 16px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+                      <span><strong>Packages:</strong> <code>npm ci</code> lockfile</span>
+                      <code style="background: #D32F2F; color: #fff; padding: 2px 8px; border-radius: 4px; font-size: 14px;">Missing dep</code>
+                    </div>
+                  </div>
+                </div>
+                <p style="margin-top: 18px; font-size: 15px; color: var(--accent); font-family: var(--font-mono); font-weight: 600;">➔ PIPELINE PHẢN ÁNH MÔI TRƯỜNG THẬT — KHÔNG PHẢI MÁY DEV</p>
+              </div>
+            </div>
+          </div>
+
+          <footer class="slide-footer"><span>ISSUE 01: LỆCH MÔI TRƯỜNG GIỮA LOCAL VÀ CI RUNNER</span><span>19 / 24</span></footer>
+        </section>
+
+        <!-- SLIDE 20: Issue 02 — Wrong test scope / hidden code -->
+        <section class="slide" data-slide>
+          <header class="slide__header">
+            <div><p class="eyebrow">20 / Phần 7 · Issue 02</p><h2>Test sai phạm vi — Pipeline pass nhưng deploy sai code</h2></div>
+            <div class="brand-lockup"><img src="assets/kaopiz-logo.svg" alt="Kaopiz"></div>
+          </header>
+
+          <div style="display: flex; flex-direction: column; gap: 22px; justify-content: flex-start; height: 100%;">
+            <div class="risk-alert-banner" style="font-size: 17px; padding: 16px 22px;">
+              <i class="topic-icon" data-lucide="alert-triangle" aria-hidden="true"></i>
+              <span><strong>ISSUE ẨN:</strong> CI báo xanh nhưng không đảm bảo bản build = bản sẽ lên server — do phạm vi test hẹp hoặc artifact không khớp commit.</span>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;">
+              <div style="background: #fff; padding: 22px 24px; border-radius: var(--radius); box-shadow: 0 4px 18px rgba(11,27,43,0.05);">
+                <span style="font-weight:700; color:var(--accent); font-family:var(--font-mono); font-size:15px;">A</span>
+                <h3 style="font-size: 17px; margin: 8px 0 6px; color: var(--ink);">Chỉ test file vừa sửa</h3>
+                <p style="font-size: 15px; color: #52636f; margin: 0; line-height: 1.45;"><code>vitest src/foo.test.ts</code> thay vì full suite — side-effect ở module khác không bị quét.</p>
+              </div>
+              <div style="background: #fff; padding: 22px 24px; border-radius: var(--radius); box-shadow: 0 4px 18px rgba(11,27,43,0.05);">
+                <span style="font-weight:700; color:var(--accent); font-family:var(--font-mono); font-size:15px;">B</span>
+                <h3 style="font-size: 17px; margin: 8px 0 6px; color: var(--ink);">Code chưa commit</h3>
+                <p style="font-size: 15px; color: #52636f; margin: 0; line-height: 1.45;">Local test pass với file chưa push — CI checkout remote không có file đó, hoặc ngược lại.</p>
+              </div>
+              <div style="background: #fff; padding: 22px 24px; border-radius: var(--radius); box-shadow: 0 4px 18px rgba(11,27,43,0.05);">
+                <span style="font-weight:700; color:var(--accent); font-family:var(--font-mono); font-size:15px;">C</span>
+                <h3 style="font-size: 17px; margin: 8px 0 6px; color: var(--ink);">Checkout sai ref</h3>
+                <p style="font-size: 15px; color: #52636f; margin: 0; line-height: 1.45;">Workflow test nhánh <code>main</code> trong khi PR merge từ feature — test không phải diff sẽ deploy.</p>
+              </div>
+              <div style="background: #fff; padding: 22px 24px; border-radius: var(--radius); box-shadow: 0 4px 18px rgba(11,27,43,0.05);">
+                <span style="font-weight:700; color:var(--accent); font-family:var(--font-mono); font-size:15px;">D</span>
+                <h3 style="font-size: 17px; margin: 8px 0 6px; color: var(--ink);">Config ẩn chỉ có trên máy dev</h3>
+                <p style="font-size: 15px; color: #52636f; margin: 0; line-height: 1.45;"><code>.env.local</code>, symlink, global package — có trên laptop, không có trên runner.</p>
+              </div>
+            </div>
+          </div>
+
+          <footer class="slide-footer"><span>ISSUE 02: PIPELINE XANH KHÔNG ĐỒNG NGHĨA ĐÚNG CODE SẼ DEPLOY</span><span>20 / 24</span></footer>
+        </section>
+
+        <!-- SLIDE 21: Issue 03 & 04 — Silent fail + latest tag -->
+        <section class="slide" data-slide>
+          <header class="slide__header">
+            <div><p class="eyebrow">21 / Phần 7 · Issue 03 &amp; 04</p><h2>Pipeline lỗi vẫn deploy &amp; Tag <code>:latest</code></h2></div>
+            <div class="brand-lockup"><img src="assets/kaopiz-logo.svg" alt="Kaopiz"></div>
+          </header>
+
+          <div class="two-col two-col--50-50" style="gap: 22px; align-items: stretch;">
+            <div style="background: #fff; padding: 24px 28px; border-radius: var(--radius); box-shadow: 0 4px 18px rgba(11,27,43,0.05); display: flex; flex-direction: column; gap: 14px;">
+              <p class="eyebrow" style="color: var(--ink); font-size: 16px;">Issue 03 — CI fail nhưng CD vẫn chạy</p>
+              <ul style="font-size: 16px; color: #52636f; line-height: 1.55; margin: 0; padding-left: 1.2em;">
+                <li><code>continue-on-error: true</code> trên step quan trọng</li>
+                <li>Job <code>deploy</code> không <code>needs: [ci]</code></li>
+                <li>Branch protection tắt / admin bypass merge</li>
+                <li>Chỉ xem icon xanh tổng thể, không đọc log job fail</li>
+              </ul>
+              <div class="risk-alert-banner" style="font-size: 14px; padding: 12px 16px;">
+                <i class="topic-icon" data-lucide="alert-triangle" aria-hidden="true"></i>
+                <span>Workflow “xanh” nhưng step test/build đã fail — deploy vẫn đẩy image lên server.</span>
+              </div>
+            </div>
+
+            <div style="background: #fff; padding: 24px 28px; border-radius: var(--radius); box-shadow: 0 4px 18px rgba(11,27,43,0.05); display: flex; flex-direction: column; gap: 14px;">
+              <p class="eyebrow" style="color: var(--ink); font-size: 16px;">Issue 04 — Deploy tag <code>:latest</code></p>
+              <figure class="code-block" style="margin: 0;">
+                <figcaption class="code-block__chrome"><span class="code-block__file">cd-workflow.yml</span></figcaption>
+                <pre class="code-block__body"><code><span class="code-block__line">docker build -t myapp:latest .</span>
+<span class="code-block__line">docker push myapp:latest</span>
+<span class="code-block__line is-fail"># Prod: image nào đang chạy? commit nào? — không trả lời được</span></code></pre>
+              </figure>
+              <ul style="font-size: 16px; color: #52636f; line-height: 1.55; margin: 0; padding-left: 1.2em;">
+                <li>Ghi đè tag liên tục — mất dấu SHA</li>
+                <li>Rollback = đoán version, không pull chính xác bản cũ</li>
+                <li>2 lần deploy liên tiếp — không biết lần nào gây lỗi</li>
+              </ul>
+            </div>
+          </div>
+
+          <footer class="slide-footer"><span>ISSUE 03 &amp; 04: CẤU HÌNH PIPELINE/CD LỎNG → DEPLOY LỖI HOẶC MẤT TRACE</span><span>21 / 24</span></footer>
+        </section>
+
+        <!-- SLIDE 22: Section 8 — Fix before deploy overview -->
+        <section class="slide" data-slide>
+          <header class="slide__header">
+            <div><p class="eyebrow">22 / Phần 8</p><h2>Cách khắc phục các issues đó trước khi Deploy</h2></div>
+            <div class="brand-lockup"><img src="assets/kaopiz-logo.svg" alt="Kaopiz"></div>
+          </header>
+          <p class="deck" style="margin-bottom: 16px;">Chặn ở cấu hình pipeline — trước merge, trước khi image chạm server. Mỗi issue Phần 7 có biện pháp tương ứng.</p>
+          <div class="two-col two-col--50-50" style="gap: 20px; align-items: stretch;">
+            <div class="panel">
+              <p class="eyebrow" style="margin-bottom: 12px;">Issue → Khắc phục</p>
+              <ul style="font-size: 17px; line-height: 1.6;">
+                <li><strong>Môi trường CI ≠ local</strong> → Container sạch + ghim runtime + <code>npm ci</code></li>
+                <li><strong>Test sai phạm vi</strong> → Full test suite + checkout đúng ref + script chuẩn</li>
+                <li><strong>Pipeline lỗi vẫn deploy</strong> → <code>needs</code> + branch protection + fail-fast</li>
+                <li><strong>Tag <code>:latest</code></strong> → Immutable tag theo <code>${{ github.sha }}</code> + health check</li>
+              </ul>
+            </div>
+            <blockquote class="quote">Deploy chỉ được phép khi CI pass thật trên đúng commit — và image phải trace được về SHA cụ thể.
+              <cite>Phần 8 — Khắc phục trước Deploy</cite>
+            </blockquote>
+          </div>
+          <footer class="slide-footer"><span>PHẦN 8: SỬA CẤU HÌNH PIPELINE — KHÔNG SỬA TRÊN PRODUCTION</span><span>22 / 24</span></footer>
+        </section>
+
+        <!-- SLIDE 23: Summary — CI & CD -->
+        <section class="slide" data-slide>
+          <header class="slide__header">
+            <div><p class="eyebrow">23 / Tổng kết</p><h2>Tầm quan trọng của CI &amp; CD</h2></div>
+            <div class="brand-lockup"><img src="assets/kaopiz-logo.svg" alt="Kaopiz"></div>
+          </header>
+          <p class="deck" style="margin-bottom: 16px;">CI và CD là hai mắt xích bổ sung nhau — không thay thế nhau. AI có thể sinh code nhanh, nhưng chỉ pipeline mới đảm bảo <strong>chất lượng</strong> và <strong>phát hành có kiểm soát</strong>.</p>
+          <div class="two-col two-col--50-50" style="gap: 24px; align-items: stretch;">
+            <article style="background: #fff; padding: 28px 30px; border-radius: var(--radius); box-shadow: 0 4px 18px rgba(11,27,43,0.05);">
+              <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 14px;">
+                <i class="topic-icon" data-lucide="shield-check" style="width: 36px; height: 36px; color: var(--accent);" aria-hidden="true"></i>
+                <div>
+                  <p class="eyebrow" style="margin: 0; color: var(--accent);">CI — Continuous Integration</p>
+                  <h3 style="margin: 4px 0 0; font-size: 22px;">Đảm bảo chất lượng</h3>
+                </div>
+              </div>
+              <ul style="font-size: 17px; color: #52636f; line-height: 1.55; margin: 0; padding-left: 1.2em;">
+                <li>Kiểm tra tự động trên runner độc lập — không tin máy local hay lời AI</li>
+                <li>Gate trước merge: lint, typecheck, test, build phải pass</li>
+                <li>Phát hiện lỗi sớm, rẻ — trong sandbox, chưa ảnh hưởng user</li>
+                <li>Tiêu chuẩn chung cho cả team: cùng lệnh, cùng môi trường</li>
+              </ul>
+            </article>
+            <article style="background: #fff; padding: 28px 30px; border-radius: var(--radius); box-shadow: 0 4px 18px rgba(11,27,43,0.05);">
+              <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 14px;">
+                <i class="topic-icon" data-lucide="rocket" style="width: 36px; height: 36px; color: var(--accent);" aria-hidden="true"></i>
+                <div>
+                  <p class="eyebrow" style="margin: 0; color: var(--accent);">CD — Continuous Delivery / Deployment</p>
+                  <h3 style="margin: 4px 0 0; font-size: 22px;">Đưa bản đã kiểm tra lên server</h3>
+                </div>
+              </div>
+              <ul style="font-size: 17px; color: #52636f; line-height: 1.55; margin: 0; padding-left: 1.2em;">
+                <li>Chỉ deploy artifact/image đã pass CI — <code>needs</code> nối CI với CD</li>
+                <li>Tag immutable theo commit SHA — biết chính xác version đang chạy</li>
+                <li>Quy trình lặp lại được, audit được — không SSH thủ công</li>
+                <li>Rollback nhanh về bản cũ khi có sự cố trên Production</li>
+              </ul>
+            </article>
+          </div>
+          <blockquote class="quote" style="margin-top: 20px; align-self: center; max-width: 100%;">CI trả lời câu hỏi <em>"Code này có đủ chuẩn không?"</em> — CD trả lời <em>"Bản đã kiểm tra này có lên server an toàn không?"</em>
+            <cite>Tổng kết — Kaopiz Sharing</cite>
+          </blockquote>
+          <footer class="slide-footer"><span>CI = CHẤT LƯỢNG · CD = PHÁT HÀNH CÓ KIỂM SOÁT</span><span>23 / 24</span></footer>
+        </section>
+
+        <!-- SLIDE 24: Closing & Q&A -->
+        <section class="slide" data-slide>
+          <header class="slide__header">
+            <div><p class="eyebrow">24 / Finish</p><h2>Q&A & Kết thúc</h2></div>
+            <div class="brand-lockup"><img src="assets/kaopiz-logo.svg" alt="Kaopiz"></div>
+          </header>
+          <div class="two-col two-col--40-60">
+            <div>
+              <h1>Hãy để pipeline trả lời.</h1>
+              <p class="deck" style="margin-top:24px;">Cảm ơn anh em đã lắng nghe buổi chia sẻ!</p>
+              <div class="cover-meta" aria-label="Thông tin">
+                <span><b>Demo Repo</b> cicd/demo-app</span>
+              </div>
+            </div>
+            <div class="panel">
+              <p class="eyebrow" style="margin-bottom:12px;">Q&A</p>
+              <h3>Câu hỏi gợi ý:</h3>
+              <ul>
+                <li>Project nhỏ có cần CI không?</li>
+                <li>Pipeline chạy 15 phút thì sao?</li>
+                <li>Có nên để AI tự Merge không?</li>
+                <li>Chưa có Test thì bắt đầu từ đâu?</li>
+              </ul>
+            </div>
+          </div>
+          <footer class="slide-footer"><span>CẢM ƠN ANH EM ĐÃ LẮNG NGHE! Q&A TIME</span><span>24 / 24</span></footer>
+        </section>
+
+      </div>
+    </main>
+
+    <!-- Controls -->
+    <nav class="controls" aria-label="Điều khiển slide">
+      <button type="button" data-prev aria-label="Slide trước">←</button>
+      <button type="button" data-next aria-label="Slide sau">→</button>
+    </nav>
+
+    <!-- Lucide CDN pinned -->
+    <script src="https://unpkg.com/lucide@1.31.0"></script>
+    <script>
+      lucide.createIcons();
+
+      const stage = document.querySelector('#stage');
+      const slides = [...document.querySelectorAll('[data-slide]')];
+      let index = 0;
+
+      function getInitialIndex() {
+        const hashMatch = location.hash.match(/^#(\d+)$/);
+        if (hashMatch) {
+          const pageNum = parseInt(hashMatch[1], 10);
+          if (pageNum >= 1 && pageNum <= slides.length) {
+            return pageNum - 1;
+          }
+        }
+        const saved = localStorage.getItem('kaopiz_deck_slide');
+        if (saved !== null) {
+          const parsed = parseInt(saved, 10);
+          if (parsed >= 0 && parsed < slides.length) {
+            return parsed;
+          }
+        }
+        return 0;
+      }
+
+      function scaleStage() {
+        const scale = Math.min(innerWidth / 1920, innerHeight / 1080);
+        stage.style.transform = `scale(${scale})`;
+      }
+
+      function show(next) {
+        index = (next + slides.length) % slides.length;
+        slides.forEach((slide, i) => {
+          slide.classList.toggle('is-active', i === index);
+        });
+        const pageNum = index + 1;
+        if (location.hash !== `#${pageNum}`) {
+          history.replaceState(null, '', `#${pageNum}`);
+        }
+        localStorage.setItem('kaopiz_deck_slide', index);
+      }
+
+      addEventListener('resize', scaleStage);
+      addEventListener('keydown', event => {
+        if (['ArrowRight', ' ', 'PageDown'].includes(event.key)) show(index + 1);
+        if (['ArrowLeft', 'PageUp'].includes(event.key)) show(index - 1);
+        if (event.key === 'Home') show(0);
+        if (event.key === 'End') show(slides.length - 1);
+      });
+
+      addEventListener('hashchange', () => {
+        const hashMatch = location.hash.match(/^#(\d+)$/);
+        if (hashMatch) {
+          const pageNum = parseInt(hashMatch[1], 10);
+          if (pageNum >= 1 && pageNum <= slides.length && pageNum - 1 !== index) {
+            show(pageNum - 1);
+          }
+        }
+      });
+
+      document.querySelector('[data-next]').onclick = () => show(index + 1);
+      document.querySelector('[data-prev]').onclick = () => show(index - 1);
+
+      scaleStage();
+      show(getInitialIndex());
+    </script>
+  </body>
+</html>

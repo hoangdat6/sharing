@@ -8,7 +8,7 @@ Preview every layout in [the component demo deck](../assets/component-demo.html)
 
 ## Shared conventions
 
-Every slide begins with `slide` and usually has a small `eyebrow`, a `h1` or `h2`, and a short `deck` line. Keep structural labels in `font-mono` and prose in `font-sans`. Use `panel` only for a bounded unit of content, not as a default container around every element.
+Every slide begins with `slide` and usually has a small `eyebrow`, a `h1` or `h2`, and a short `deck` line. Keep structural labels in `font-mono` and prose in `font-sans`. Use `panel` only for a bounded unit of content, not as a default container around every element. Cards, panels, callouts, `three-col` articles, `agenda` items, and comparison articles never use `border-left` or `border-top` (or a matching edge stripe). Use gap, radius, fill, shadow, or an even `border: 1px solid var(--line)`.
 
 ```html
 <section class="slide slide--default">
@@ -354,3 +354,4 @@ Use a source line in the caption where an external image, figure, or screenshot 
 | Developer and AI must share one gate | `pipeline-converge` | Two `comparison` cards with no join |
 | YAML / source / diff / terminal as evidence | `code-block` (+ modifier) | `media-frame` screenshot, unstyled `<pre>`, `panel` dump |
 | A screenshot of a running product | `media-frame` | Recreating the UI in CSS |
+| A card, panel, callout, or column item | Even `border: 1px solid var(--line)`, fill, or shadow | `border-left` / `border-top` accent bar, colored status stripe |
